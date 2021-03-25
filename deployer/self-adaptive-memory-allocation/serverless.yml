@@ -12,12 +12,12 @@ provider:
   timeout: 500
 
 functions:
-  memmory:
+  memory:
     handler: memory-intensive-handler.testFunction
     events:
       - http:
           method: get
-          path: memmory
+          path: memory
   cpu:
     handler: cpu-intensive-handler.testFunction
     events:
