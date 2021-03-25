@@ -1,0 +1,26 @@
+service: self-adaptive-memory-allocation
+app: memory-intensive
+org: tetzubko
+frameworkVersion: '2'
+
+provider:
+  name: aws
+  runtime: python3.8
+  lambdaHashingVersion: 20201221
+  memorySize: 800
+  region: eu-central-1
+  timeout: 500
+
+functions:
+  memmory:
+    handler: memory-intensive-handler.testFunction
+    events:
+      - http:
+          method: get
+          path: memmory
+  cpu:
+    handler: cpu-intensive-handler.testFunction
+    events:
+      - http:
+          method: get
+          path: cpu
