@@ -5,21 +5,22 @@ frameworkVersion: '2'
 
 provider:
   name: aws
-  runtime: python3.8
   lambdaHashingVersion: 20201221
-  memorySize: 800
+  memorySize: 2048
   region: eu-central-1
   timeout: 500
 
 functions:
   memory:
+    runtime: python3.8
     handler: memory-intensive-handler.testFunction
     events:
       - http:
           method: get
           path: memory
   cpu:
-    handler: cpu-intensive-handler.testFunction
+    runtime: nodejs12.x
+    handler: cpu-intensive-handler.timestamp
     events:
       - http:
           method: get
