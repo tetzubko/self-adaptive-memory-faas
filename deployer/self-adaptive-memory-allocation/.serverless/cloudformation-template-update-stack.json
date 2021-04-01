@@ -83,6 +83,12 @@
         "LogGroupName": "/aws/lambda/self-adaptive-memory-allocation-dev-cpu"
       }
     },
+    "IoLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/self-adaptive-memory-allocation-dev-io"
+      }
+    },
     "IamRoleLambdaExecution": {
       "Type": "AWS::IAM::Role",
       "Properties": {
@@ -139,6 +145,13 @@
                       "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/self-adaptive-memory-allocation-dev*:*:*"
                     }
                   ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:*"
+                  ],
+                  "Resource": "arn:aws:s3:::iointensivefaas/*"
                 }
               ]
             }
@@ -203,6 +216,12 @@
                         "CpuLogGroup",
                         "Arn"
                       ]
+                    },
+                    {
+                      "Fn::GetAtt": [
+                        "IoLogGroup",
+                        "Arn"
+                      ]
                     }
                   ]
                 }
@@ -219,12 +238,12 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/self-adaptive-memory-allocation/dev/1617100167547-2021-03-30T10:29:27.547Z/self-adaptive-memory-allocation.zip"
+          "S3Key": "serverless/self-adaptive-memory-allocation/dev/1617269993856-2021-04-01T09:39:53.856Z/self-adaptive-memory-allocation.zip"
         },
         "Handler": "s_memory.handler",
         "Runtime": "python3.8",
         "FunctionName": "self-adaptive-memory-allocation-dev-memory",
-        "MemorySize": 2048,
+        "MemorySize": 512,
         "Timeout": 500,
         "Role": {
           "Fn::GetAtt": [
@@ -244,12 +263,12 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/self-adaptive-memory-allocation/dev/1617100167547-2021-03-30T10:29:27.547Z/self-adaptive-memory-allocation.zip"
+          "S3Key": "serverless/self-adaptive-memory-allocation/dev/1617269993856-2021-04-01T09:39:53.856Z/self-adaptive-memory-allocation.zip"
         },
         "Handler": "s_cpu.handler",
         "Runtime": "nodejs12.x",
         "FunctionName": "self-adaptive-memory-allocation-dev-cpu",
-        "MemorySize": 2048,
+        "MemorySize": 512,
         "Timeout": 500,
         "Role": {
           "Fn::GetAtt": [
@@ -262,24 +281,59 @@
         "CpuLogGroup"
       ]
     },
-    "MemoryLambdaVersionafmIuRrubuuhz1JbsgcjhbIpiYuYIOwSTloOq8zU": {
+    "IoLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/self-adaptive-memory-allocation/dev/1617269993856-2021-04-01T09:39:53.856Z/self-adaptive-memory-allocation.zip"
+        },
+        "Handler": "s_io.handler",
+        "Runtime": "nodejs12.x",
+        "FunctionName": "self-adaptive-memory-allocation-dev-io",
+        "MemorySize": 512,
+        "Timeout": 500,
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "IoLogGroup"
+      ]
+    },
+    "MemoryLambdaVersion83K9HKq1PUIxsTWizLWe2gLlISyJHJWpHT7bmFNXY": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "MemoryLambdaFunction"
         },
-        "CodeSha256": "It2dCtypx9piRQg13wKPM9XGW6Uw/H1Avtr4lW1b2SU="
+        "CodeSha256": "uliAjYa0dDlux2RjszDiJdKE7b6CSP9CCOjvIL7WWGc="
       }
     },
-    "CpuLambdaVersionG8wTnUR4IJh4oHrMrsy54nQ3vGGXR4XZ2FLqCDjRKQU": {
+    "CpuLambdaVersionf8kCwzVF5dRt6ILDk4wCqaIWyJI793jtQkIEVa0A4": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "CpuLambdaFunction"
         },
-        "CodeSha256": "It2dCtypx9piRQg13wKPM9XGW6Uw/H1Avtr4lW1b2SU="
+        "CodeSha256": "uliAjYa0dDlux2RjszDiJdKE7b6CSP9CCOjvIL7WWGc="
+      }
+    },
+    "IoLambdaVersion4E49uk1h2zrqtGxMbewWKjpv7iMStEQWN4BqK52o3Q": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "IoLambdaFunction"
+        },
+        "CodeSha256": "uliAjYa0dDlux2RjszDiJdKE7b6CSP9CCOjvIL7WWGc="
       }
     },
     "ApiGatewayRestApi": {
@@ -319,6 +373,21 @@
           ]
         },
         "PathPart": "cpu",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayResourceIo": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Fn::GetAtt": [
+            "ApiGatewayRestApi",
+            "RootResourceId"
+          ]
+        },
+        "PathPart": "io",
         "RestApiId": {
           "Ref": "ApiGatewayRestApi"
         }
@@ -410,7 +479,50 @@
         "MethodResponses": []
       }
     },
-    "ApiGatewayDeployment1617100161982": {
+    "ApiGatewayMethodIoGet": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "GET",
+        "RequestParameters": {},
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceIo"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "ApiKeyRequired": false,
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "IoLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        },
+        "MethodResponses": []
+      }
+    },
+    "ApiGatewayDeployment1617269985396": {
       "Type": "AWS::ApiGateway::Deployment",
       "Properties": {
         "RestApiId": {
@@ -420,7 +532,8 @@
       },
       "DependsOn": [
         "ApiGatewayMethodMemoryGet",
-        "ApiGatewayMethodCpuGet"
+        "ApiGatewayMethodCpuGet",
+        "ApiGatewayMethodIoGet"
       ]
     },
     "MemoryLambdaPermissionApiGateway": {
@@ -466,6 +579,43 @@
         "FunctionName": {
           "Fn::GetAtt": [
             "CpuLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "/*/*"
+            ]
+          ]
+        }
+      }
+    },
+    "IoLambdaPermissionApiGateway": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "IoLambdaFunction",
             "Arn"
           ]
         },
@@ -606,7 +756,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/self-adaptive-memory-allocation/dev/1617100167547-2021-03-30T10:29:27.547Z/custom-resources.zip"
+          "S3Key": "serverless/self-adaptive-memory-allocation/dev/1617269993856-2021-04-01T09:39:53.856Z/custom-resources.zip"
         },
         "FunctionName": "self-adaptive-memory-allocation-e95cb464af3353e717878f895afc1943",
         "Handler": "apiGatewayCloudWatchRole/handler.handler",
@@ -644,6 +794,16 @@
         }
       }
     },
+    "CloudWatchLogsSubscriptionFilterIoLogGroup": {
+      "Type": "AWS::Logs::SubscriptionFilter",
+      "Properties": {
+        "DestinationArn": "arn:aws:logs:eu-central-1:802587217904:destination:82ceb285-a0fb-4300-b033-f7264c3a3b6d#X00J2Zt53995PCBn6r#self-adaptive-memory-allocation#dev",
+        "FilterPattern": "?\"REPORT RequestId: \" ?\"SERVERLESS_ENTERPRISE\"",
+        "LogGroupName": {
+          "Ref": "IoLogGroup"
+        }
+      }
+    },
     "CloudWatchLogsSubscriptionFilterApiGatewayLogGroup": {
       "Type": "AWS::Logs::SubscriptionFilter",
       "Properties": {
@@ -672,13 +832,19 @@
     "MemoryLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "MemoryLambdaVersionafmIuRrubuuhz1JbsgcjhbIpiYuYIOwSTloOq8zU"
+        "Ref": "MemoryLambdaVersion83K9HKq1PUIxsTWizLWe2gLlISyJHJWpHT7bmFNXY"
       }
     },
     "CpuLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "CpuLambdaVersionG8wTnUR4IJh4oHrMrsy54nQ3vGGXR4XZ2FLqCDjRKQU"
+        "Ref": "CpuLambdaVersionf8kCwzVF5dRt6ILDk4wCqaIWyJI793jtQkIEVa0A4"
+      }
+    },
+    "IoLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "IoLambdaVersion4E49uk1h2zrqtGxMbewWKjpv7iMStEQWN4BqK52o3Q"
       }
     },
     "ServiceEndpoint": {
