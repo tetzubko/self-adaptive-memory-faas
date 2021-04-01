@@ -5,7 +5,7 @@ module.exports.timestamp = (event, context, callback) => {
     headers: {
       "Content-Type": "text/plain"
     },
-    body: parseInt(Date.now() / 1000)
+    body: "sucess"
   };
 
   callback(null, response)
