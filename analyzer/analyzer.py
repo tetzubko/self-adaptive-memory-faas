@@ -4,12 +4,15 @@ import boto3
 import pandas as pd
 from datetime import datetime
 
+new_memory = 0
 
 def redeploy_sls(memory: int):
+    print("redeploying with: ", memory)
     os.system('cd ../deployer/self-adaptive-memory-allocation && sls deploy --memory ' + str(memory))
 
 
 def collect_data_from_logs(func_name: str, start: int, end: int):
+    global new_memory
     client = boto3.client('logs', region_name='eu-central-1')
 
     # query = "fields @timestamp, @billedDuration, @duration, @maxMemoryUsed, @memorySize"
@@ -30,25 +33,20 @@ def collect_data_from_logs(func_name: str, start: int, end: int):
 
     while response == None or response['status'] == 'Running':
         print('Waiting for query to complete ...')
-        time.sleep(5)
+        time.sleep(1)
         response = client.get_query_results(
             queryId=query_id
         )
-
-    #  add loop while no results print time and attempt
-    # while not response["results"]:
-    #     print("Attempt at: ", datetime.now().strftime("%H:%M:%S"))
-    #     time.sleep(1)
 
     values = []
     if response["results"]:
         for log in response["results"]:
             value = {
                 "timestampInvoked": "",
+                "timestampAnalyzed": "",
                 "billed_duration": "",
                 "used_memory_mb": "",
-                "allocated_emory_mb": "",
-                "timestampAnalyzed": ""
+                "allocated_memory_mb": ""
             }
             for record in log:
                 if "timestamp" in record['field']:
@@ -61,14 +59,21 @@ def collect_data_from_logs(func_name: str, start: int, end: int):
                     value["used_memory_mb"] = float(record['value']) / 10 ** 6
 
                 elif "memorySize" in record['field']:
-                    value["allocated_emory_mb"] = float(record['value']) / 10 ** 6
+                    value["allocated_memory_mb"] = float(record['value']) / 10 ** 6
 
-            if value["billed_duration"]:
-                value["timestampAnalyzed"] = datetime.now().strftime("%H:%M:%S")
-                values.append(value)
-            if value["used_memory_mb"] > value["allocated_emory_mb"] * 0.6:
-                print("Memory allocated: " + value["allocated_emory_mb"] + "  Memory used: " + value["used_memory_mb"])
-                redeploy_sls(value["allocated_emory_mb"] * 2)
+            value["timestampAnalyzed"] = datetime.now().strftime("%H:%M:%S")
+            values.append(value)
+
+            if value["allocated_memory_mb"] <= new_memory:
+                print("---- this think should do continue from the loop: ", new_memory)
+                continue # when it is old logs, which still did not see memory increase
+
+            elif value["used_memory_mb"] > value["allocated_memory_mb"] * 0.6:
+                print("Memory allocated: ", value["allocated_memory_mb"])
+                print("Memory used: ", value["used_memory_mb"])
+                new_memory = value["allocated_memory_mb"] * 2
+                print("new_memory is: ", new_memory)
+                redeploy_sls(value["allocated_memory_mb"] * 2)
 
         df = pd.DataFrame(values)
         df.set_index("timestampInvoked", inplace=True)
@@ -84,12 +89,14 @@ def collect_data_from_logs(func_name: str, start: int, end: int):
     else:
         return pd.DataFrame(values)
 
+
 def main():
-    dt = datetime.now()
-    seconds = int(dt.strftime('%s'))
     while (True):
+        print("--- in main")
+        dt = datetime.now()
+        seconds = int(dt.strftime('%s'))
         time.sleep(1)
-        collect_data_from_logs("self-adaptive-memory-allocation-dev-memory", seconds - 1 * 120, seconds)
+        collect_data_from_logs("self-adaptive-memory-allocation-dev-memory", seconds - 1 * 60, seconds)
 
 
 if __name__ == "__main__":
