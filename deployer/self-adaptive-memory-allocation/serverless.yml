@@ -23,17 +23,17 @@ functions:
       - http:
           method: get
           path: memory
-  cpu:
-    runtime: nodejs12.x
-    handler: cpu-intensive-handler.timestamp
-    events:
-      - http:
-          method: get
-          path: cpu
-  io:
-    runtime: nodejs12.x
-    handler: io-intensive-handler.server
-    events:
-      - http:
-          method: get
-          path: io
+#  cpu:
+#    runtime: nodejs12.x
+#    handler: cpu-intensive-handler.timestamp
+#    events:
+#      - http:
+#          method: get
+#          path: cpu
+#  io:
+#    runtime: nodejs12.x
+#    handler: io-intensive-handler.server
+#    events:
+#      - http:
+#          method: get
+#          path: io

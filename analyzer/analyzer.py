@@ -1,4 +1,3 @@
-import time
 import boto3
 import re
 from deployer import redeployer
@@ -8,9 +7,8 @@ new_memory_min = 0
 values = []
 
 def redeploy_sls(memory: float):
-    redeployer.test()
-    print("Redeploying with: ", memory)
-   # os.system('cd ../deployer/self-adaptive-memory-allocation && sls deploy --memory ' + str(memory))
+     # start & end time add
+    redeployer.redeploy_sls(memory)
 
 
 def parsing_log(log: str):
@@ -70,15 +68,3 @@ def collect_data_from_logs(func_name: str, start: int, end: int):
             elif value["used_memory_mb"] <= value["allocated_memory_mb"] * 0.3:
                 new_memory_min = value["allocated_memory_mb"] * 0.5
                 redeploy_sls(value["allocated_memory_mb"] * 0.5)
-
-def main():
-    while (True):
-        redeployer.test()
-        start_time = int(round(time.time() * 1000)) - 10 * 1000 # 5 seconds ago
-        end_time = int(round(time.time() * 1000))  # current
-        time.sleep(2)
-        collect_data_from_logs("self-adaptive-memory-allocation-dev-memory", start_time, end_time)
-
-
-if __name__ == "__main__":
-    main()
