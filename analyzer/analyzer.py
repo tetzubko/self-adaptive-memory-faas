@@ -33,12 +33,12 @@ def parsing_log(log: str):
     return value
 
 
-def collect_data_from_logs(func_name: str, start: int, end: int):
+def collect_data_from_logs(func_name: str, start: int, end: int, region_name: str, optimize_parameter: str):
     global new_memory_max
     global new_memory_min
     global values
 
-    client = boto3.client('logs', region_name='eu-central-1')
+    client = boto3.client('logs', region_name)
     log_group = '/aws/lambda/' + func_name
 
     response = client.filter_log_events(
