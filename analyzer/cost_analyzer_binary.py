@@ -14,7 +14,7 @@ def lambda_handler(event, context):
 
 
 def search_memory_interval(interval_start, interval_end):
-    if (interval_end - interval_start > 4 * 128):
+    if (interval_end - interval_start > 0):
 
         middle = int((interval_end + interval_start) / 2)
         print("middle:  ", middle)
@@ -29,8 +29,7 @@ def search_memory_interval(interval_start, interval_end):
             print("part two: ", middle, interval_end)
             search_memory_interval(middle, interval_end)
     else:
-        print("linear search can be performed on the interval  ", interval_start, interval_end)
-        linear_search(interval_start, interval_end)
+        print("memory is:   ", interval_start)
 
 
 def get_duration(function_name: str, memory: int):
@@ -61,21 +60,3 @@ def set_lambda_memory_level(function_name: str, memory: int):
         FunctionName=function_name,
         MemorySize=memory
     )
-
-
-def linear_search(interval_start: int, interval_end: int):
-    current_memory = interval_start
-
-    memory_cost_min = interval_start
-    cost_min = get_duration(lambda_name, interval_start) * interval_start
-
-    while (current_memory <= interval_end):
-        current_cost = get_duration(lambda_name, current_memory) * current_memory
-        print("current_cost:  ", current_cost)
-        print("cost_min:  ", cost_min)
-        if (current_cost <= cost_min):
-            memory_cost_min = current_memory
-            cost_min = current_cost
-        current_memory = current_memory + 128
-
-    set_lambda_memory_level(memory_cost_min)
