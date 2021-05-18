@@ -59,7 +59,6 @@ def liner_algorithm():
                 print("===== Setting first global_min: ", memory_prev)  # first possible minimum
                 global_min["memory"] = memory_prev
                 global_min["duration"] = duration_prev
-                global_min["delta"] = duration_prev
                 counter += 1
             elif (duration_prev * memory_prev <= global_min["memory"] * global_min[
                 "duration"]):  # it is a new global minimum
