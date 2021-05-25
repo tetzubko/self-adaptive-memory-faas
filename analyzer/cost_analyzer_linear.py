@@ -5,82 +5,66 @@ import re
 import numpy as np
 
 lambda_func = boto3.client('lambda')
-lambda_name = "arn:aws:lambda:eu-central-1:277644480311:function:cpu_intensive_3"
-
+lambda_name = ""
 
 def lambda_handler(event, context):
-    memories = []
+    global lambda_name
+    lambda_name = event['functionId']
+    memory = liner_algorithm()
+    set_lambda_memory_level(memory)
 
-    for _ in range(5):
-        memory = liner_algorithm()
-        memories.append(memory)
-
-    memories.sort()
-    memories.pop()
-    memories.pop(0)
-    print("============ memories: ")
-    print(memories)
-
-    set_lambda_memory_level(lambda_name, int(sum(memories) / len(memories)))
-
-    return {'statusCode': 200, 'body': json.dumps("response")}
+    return {'statusCode': 200, 'body': json.dumps("set memory to: ")}
 
 
 def liner_algorithm():
-    # max counter value, increment step
-    memory_prev = 128  # can be user-defined
-    counter = 0
+    values = []
+    memory_prev = 128
+    attempts_counter = 0
+    max_attempts = 5
+    step_increment = 128
+
+    set_lambda_memory_level(memory_prev)
+    duration_prev = invoke_lambda()
+    value = [duration_prev, memory_prev, duration_prev*memory_prev/1024]
+    values.append(value)
+
+    print("===== Setting first global_min: ", memory_prev)
     global_min = {
-        "duration": None,
-        "memory": None
-    }
+        "duration": duration_prev,
+        "memory": memory_prev
+    } # first possible global minimum
 
-    set_lambda_memory_level(lambda_name, memory_prev)
-    duration_prev = invoke_lambda(lambda_name)
+    while (attempts_counter <= max_attempts):
 
-    while (counter <= 5):
+        memory = memory_prev + step_increment
+        set_lambda_memory_level(memory)
+        duration = int(invoke_lambda())
 
-        memory = memory_prev + 128  # step can be dependent on the ratio
-        set_lambda_memory_level(lambda_name, memory)
-        duration = int(invoke_lambda(lambda_name))
+        value = [duration, memory, duration*memory/1024]
+        values.append(value)
 
-        print("duration_prev:    ", duration_prev)
-        print("memory_prev:    ", memory_prev)
-        print("duration:    ", duration)
-        print("memory:    ", memory)
-        print(counter)
-
-        if ((duration * memory) / (
-                duration_prev * memory_prev) <= 1):  # if the new point is more cost efficient than the previous one
-            if (counter != 0):
-                counter += 1
-        else:
-            if (global_min["memory"] == None):
-                print("===== Setting first global_min: ", memory_prev)  # first possible minimum
-                global_min["memory"] = memory_prev
-                global_min["duration"] = duration_prev
-                counter += 1
-            elif (duration_prev * memory_prev <= global_min["memory"] * global_min[
-                "duration"]):  # it is a new global minimum
+        if duration * memory > duration_prev * memory_prev:
+            if duration_prev * memory_prev <= global_min["memory"] * global_min["duration"]:  # it is a new global minimum
                 print("===== Setting new global_min:  ", memory_prev)
                 global_min["memory"] = memory_prev
                 global_min["duration"] = duration_prev
-                counter = 0
+                attempts_counter = 0
             else:
                 print("===== this minimum is bigger than global one")
-                counter += 1  # this minimum is bigger than existing one
+                attempts_counter += 1  # this minimum is bigger than existing one
 
         duration_prev = duration
         memory_prev = memory
 
+    print(values)
     return global_min["memory"]
 
 
-def invoke_lambda(function_name: str):
+def invoke_lambda():
     durations = []
     for _ in range(5):
         response = lambda_func.invoke(
-            FunctionName=function_name,
+            FunctionName=lambda_name,
             InvocationType='RequestResponse',
             LogType='Tail',
         )
@@ -90,11 +74,11 @@ def invoke_lambda(function_name: str):
 
     print(durations)
 
-    return np.percentile(durations, 90)  # 90 perc
+    return np.percentile(durations, 90)
 
 
-def set_lambda_memory_level(function_name: str, memory: int):
+def set_lambda_memory_level(memory: int):
     lambda_func.update_function_configuration(
-        FunctionName=function_name,
+        FunctionName=lambda_name,
         MemorySize=memory
     )
