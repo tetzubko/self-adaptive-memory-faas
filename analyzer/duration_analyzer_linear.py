@@ -5,64 +5,68 @@ import re
 import numpy as np
 
 lambda_func = boto3.client('lambda')
-lambda_name = "arn:aws:lambda:eu-central-1:277644480311:function:cpu_intensive"
+lambda_name = ""
 
 
 def lambda_handler(event, context):
-    memory = liner_algorithm()
-    set_lambda_memory_level(lambda_name, memory)
+    global lambda_name
+    lambda_name = event['functionId']
+    memory = linear_algorithm()
+    set_lambda_memory_level(memory)
     return {'statusCode': 200, 'body': json.dumps("response")}
 
 
-def liner_algorithm():
-    # max counter value, increment step
-    memory_prev = 128  # can be user-defined
-    counter = 0
+def linear_algorithm():
+    memory_prev = 128
+    attempts_counter = 0
+    values = []
+    max_attempts = 3
+    step_increment = 128
+
+    set_lambda_memory_level(memory_prev)
+    duration_prev = invoke_lambda()
     global_min = {
-        "duration": None,
-        "memory": None
+        "duration": duration_prev,
+        "memory": memory_prev
     }
+    value = [duration_prev, memory_prev, duration_prev * memory_prev / 1024]
+    values.append(value)
 
-    set_lambda_memory_level(lambda_name, memory_prev)
-    duration_prev = invoke_lambda(lambda_name)
+    while (attempts_counter <= max_attempts):
 
-    while (counter <= 5):
+        memory = memory_prev + step_increment
+        set_lambda_memory_level(memory)
+        duration = int(invoke_lambda())
 
-        memory = memory_prev + 128  # step can be dependent on the ratio
-        set_lambda_memory_level(lambda_name, memory)
-        duration = int(invoke_lambda(lambda_name))
+        value = [duration, memory, duration * memory / 1024]
+        values.append(value)
 
-        print("duration_prev:    ", duration_prev)
-        print("memory_prev:    ", memory_prev)
-        print("duration:    ", duration)
-        print("memory:    ", memory)
-        print(counter)
-
-        if (duration /duration_prev  <= 0.99):  # if the new duration is smaller than the previous one
-            if (counter != 0):
-                if(duration / global_min["duration"] <= 0.99):  # it is a new global minimum, if the new minimum is smaller than existing one
-                    print("===== Setting new global_min memory:  ", memory)
-                    print("===== Setting new global_min duration:  ", duration)
-                    global_min["memory"] = memory
-                    global_min["duration"] = duration
-                    counter = 0
+        if (duration /duration_prev > 0.99):  # if the duration increased
+            if(duration_prev / global_min["duration"] <= 0.99):  # it is a new global minimum, if the new minimum is smaller than existing one
+                print("===== Setting new global_min duration:  ", duration_prev)
+                print("===== global_min duration:  ", global_min["duration"])
+                print("")
+                global_min["memory"] = memory_prev
+                global_min["duration"] = duration_prev
+                attempts_counter = 0
             else:
-                global_min["memory"] = memory
-                global_min["duration"] = duration
-        else:
-            counter += 1
+                print("===== This min is bigger than existing one:  ", duration)
+                attempts_counter += 1
 
         duration_prev = duration
         memory_prev = memory
 
+    print(values)
+    print("selected memory:  ", global_min["memory"])
+
     return global_min["memory"]
 
 
-def invoke_lambda(function_name: str):
+def invoke_lambda():
     durations = []
     for _ in range(5):
         response = lambda_func.invoke(
-            FunctionName=function_name,
+            FunctionName=lambda_name,
             InvocationType='RequestResponse',
             LogType='Tail',
         )
@@ -70,13 +74,11 @@ def invoke_lambda(function_name: str):
         m = re.search('\tBilled Duration: (\d+)', log.decode("utf-8"))
         durations.append(int(m.group(1)))
 
-    print(durations)
-
-    return np.percentile(durations, 90)  # 90 perc
+    return np.percentile(durations, 90)
 
 
-def set_lambda_memory_level(function_name: str, memory: int):
+def set_lambda_memory_level(memory: int):
     lambda_func.update_function_configuration(
-        FunctionName=function_name,
+        FunctionName=lambda_name,
         MemorySize=memory
     )

@@ -10,13 +10,13 @@ lambda_name = ""
 def lambda_handler(event, context):
     global lambda_name
     lambda_name = event['functionId']
-    memory = liner_algorithm()
+    memory = linear_algorithm()
     set_lambda_memory_level(memory)
 
     return {'statusCode': 200, 'body': json.dumps("set memory to: ")}
 
 
-def liner_algorithm():
+def linear_algorithm():
     values = []
     memory_prev = 128
     attempts_counter = 0
@@ -71,8 +71,6 @@ def invoke_lambda():
         log = base64.b64decode(response["LogResult"])
         m = re.search('\tBilled Duration: (\d+)', log.decode("utf-8"))
         durations.append(int(m.group(1)))
-
-    print(durations)
 
     return np.percentile(durations, 90)
 
