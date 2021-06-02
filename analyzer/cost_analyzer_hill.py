@@ -7,7 +7,7 @@ import numpy as np
 
 lambda_func = boto3.client('lambda')
 lambda_name = ""
-
+values = []
 
 def lambda_handler(event, context):
     global lambda_name
@@ -20,10 +20,12 @@ def lambda_handler(event, context):
 def hill_algorithm(memory: int):
     current_memory = memory
     step = 128
-    values = []
     attempts_counter=0
     max_attempts=5
-    min_cost= float('inf')
+    value = {
+        "min_cost": float('inf'),
+        "memory": "",
+    }
 
     while (attempts_counter <= max_attempts):
         if (current_memory - step < 128):
@@ -48,13 +50,13 @@ def hill_algorithm(memory: int):
             current_memory -= int(random.uniform(1, 2) * step)
             print("------ cost is increasing, decrease memory:  ", current_memory)
             attempts_counter = attempts_counter if attempts_counter==0 else attempts_counter+1
-            if (cost_left < min_cost):
-                print("comparing", cost_left, min_cost)
-                min_cost = cost_left
+            if (cost_left < value["min_cost"]):
+                print("comparing", cost_left, value["min_cost"])
+                value["min_cost"] = cost_left
+                value["memory"] = duration_neighbbour_left
                 attempts_counter = 0
     print(values)
-    print(min_cost)
-    return min_cost
+    return value["min_cost"]
 
 def get_duration(memory: int):
     set_lambda_memory_level(memory)
