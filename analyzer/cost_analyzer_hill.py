@@ -6,63 +6,66 @@ import random
 import numpy as np
 
 lambda_func = boto3.client('lambda')
-lambda_name = "arn:aws:lambda:eu-central-1:277644480311:function:cpu_intensive_3"
+lambda_name = ""
 
 
 def lambda_handler(event, context):
-    algorithm(2656)
+    global lambda_name
+    lambda_name = event['functionId']
+    memory = hill_algorithm(600)
+    set_lambda_memory_level(memory)
     return {'statusCode': 200, 'body': json.dumps("response")}
 
 
-def algorithm(memory: int):
+def hill_algorithm(memory: int):
     current_memory = memory
     step = 128
+    values = []
+    attempts_counter=0
+    max_attempts=5
+    min_cost= float('inf')
 
-    while (1):
-        if (current_memory == 128):
-            raise Exception("current_memory is 128")
+    while (attempts_counter <= max_attempts):
+        if (current_memory - step < 128):
+            return current_memory
 
-        current_duration = get_duration(lambda_name, current_memory)
-        duration_neighbbour_left = get_duration(lambda_name, current_memory - step)
-        duration_neighbbour_right = get_duration(lambda_name, current_memory + step)
+        duration_neighbbour_left = get_duration(current_memory - step)
+        current_duration = get_duration(current_memory)
 
-        compare_1 = duration_neighbbour_left - current_duration - (current_memory - (current_memory - step))
-        compare_2 = current_duration - duration_neighbbour_right - (current_memory + step - current_memory)
+        cost_left = duration_neighbbour_left * (current_memory - step)/1024
+        cost_current = current_duration * current_memory/1024
 
-        print("compare_1", compare_1)
-        print("compare_2", compare_2)
+        current_value = [current_duration, current_memory, cost_current]
+        left_value = [duration_neighbbour_left, current_memory - step,  cost_left]
+        values.append(left_value)
+        values.append(current_value)
 
-        if (compare_1 > 0 and compare_2 > 0):
-            current_memory += int(random.uniform(1, 2)*step)
-            print("------ both comapre are bigger 0 current_mem incresed to:  ", current_memory)
-        elif (compare_1 < 0 and compare_2 > 0):
-            print("------ error state compare_1<0 and compare_2>0 mem stays:  ", current_memory)
-        elif (compare_1 < 0 and compare_2 < 0):
-            current_memory -= int(random.uniform(1, 2)*step)
-            print("------ current_mem decreased to:  ", current_memory)
-        elif (compare_1 > 0 and compare_2 < 0):
-            if(compare_1-compare_2 > 150):
-                current_memory -= int(random.uniform(1, 2)*step) # random is so it does not stay in the endless loop
-            else:
-                print("current interval is good to stop:  ", current_memory)
-                break
-        elif(compare_1==0 or compare_2==0):
-            print("point equals 0:  ", current_memory)
-            break
-        else:
-            print("--------- smth else ")
+        if(cost_current <= cost_left): # cost is decreasing, increase mem
+            current_memory += int(random.uniform(1, 2) * step)
+            print("------ cost is decreasing, increase memory:  ", current_memory)
+            attempts_counter = attempts_counter if attempts_counter==0 else attempts_counter+1
+        else: # cost is increasing, decrease mem
+            current_memory -= int(random.uniform(1, 2) * step)
+            print("------ cost is increasing, decrease memory:  ", current_memory)
+            attempts_counter = attempts_counter if attempts_counter==0 else attempts_counter+1
+            if (cost_left < min_cost):
+                print("comparing", cost_left, min_cost)
+                min_cost = cost_left
+                attempts_counter = 0
+    print(values)
+    print(min_cost)
+    return min_cost
 
-
-def get_duration(function_name: str, memory: int):
-    set_lambda_memory_level(function_name, memory)
-    return invoke_lambda(function_name)
+def get_duration(memory: int):
+    set_lambda_memory_level(memory)
+    return invoke_lambda()
 
 
-def invoke_lambda(function_name: str):
+def invoke_lambda():
     durations = []
-    for _ in range(10):
+    for _ in range(5):
         response = lambda_func.invoke(
-            FunctionName=function_name,
+            FunctionName=lambda_name,
             InvocationType='RequestResponse',
             LogType='Tail',
         )
@@ -70,17 +73,11 @@ def invoke_lambda(function_name: str):
         m = re.search('\tBilled Duration: (\d+)', log.decode("utf-8"))
         durations.append(int(m.group(1)))
 
-    print("durations", durations)
-    durations.sort()
-    durations.pop()
-    durations.pop(0)
-    print(sum(durations) / len(durations))
-
-    return int(sum(durations) / len(durations))  # 90 perc
+    return np.percentile(durations, 90)  # 90 perc
 
 
-def set_lambda_memory_level(function_name: str, memory: int):
+def set_lambda_memory_level(memory: int):
     lambda_func.update_function_configuration(
-        FunctionName=function_name,
+        FunctionName=lambda_name,
         MemorySize=memory
     )
