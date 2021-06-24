@@ -1,15 +1,12 @@
-module.exports.timestamp = (event, context, callback) => {
+exports.handler = async (event) => {
     mySlowFunction(8);
-  const response = {
-    statusCode: 200,
-    headers: {
-      "Content-Type": "text/plain"
-    },
-    body: "sucess"
-  };
-
-  callback(null, response)
+    const response = {
+        statusCode: 200,
+        body: JSON.stringify('test'),
+    };
+    return response;
 };
+
 
 function mySlowFunction(baseNumber) {
 	console.time('mySlowFunction');
@@ -19,3 +16,6 @@ function mySlowFunction(baseNumber) {
 	}
 	console.timeEnd('mySlowFunction');
 }
+
+
+// Adapted from: https://gist.github.com/sqren/5083d73f184acae0c5b7

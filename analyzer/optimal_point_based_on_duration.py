@@ -7,16 +7,17 @@ import numpy as np
 lambda_func = boto3.client('lambda')
 lambda_name = ""
 
-
 def lambda_handler(event, context):
     global lambda_name
     lambda_name = event['functionId']
-    memory = linear_algorithm()
+    memory = optimal_algorithm()
     set_lambda_memory_level(memory)
-    return {'statusCode': 200, 'body': json.dumps("response")}
+
+    return {'statusCode': 200, 'body': json.dumps("set memory to: ")}
 
 
-def linear_algorithm():
+def optimal_algorithm():
+    aws_compute_coef = 0.00001667
     memory_prev = 128
     attempts_counter = 0
     values = []
@@ -29,7 +30,8 @@ def linear_algorithm():
         "duration": duration_prev,
         "memory": memory_prev
     }
-    value = [duration_prev, memory_prev, duration_prev * memory_prev / 1024]
+
+    value = [duration_prev, memory_prev, duration_prev * memory_prev * aws_compute_coef / 1024000]
     values.append(value)
 
     while (attempts_counter <= max_attempts):
@@ -38,17 +40,17 @@ def linear_algorithm():
         set_lambda_memory_level(memory)
         duration = int(invoke_lambda())
 
-        value = [duration, memory, duration * memory / 1024]
+        value = [duration, memory, duration * memory * aws_compute_coef / 1024000]
         values.append(value)
 
-        if (duration /duration_prev > 0.99):  # if the duration increased
-            if(duration_prev / global_min["duration"] <= 0.99):  # it is a new global minimum, if the new minimum is smaller than existing one
+        if (duration / duration_prev > 0.8):  # the duration stopped decreasing actively, see the value it had before
+            if (duration_prev / global_min["duration"] <= 0.8):
                 print("===== Setting new global_min duration:  ", duration_prev)
                 print("===== global_min duration:  ", global_min["duration"])
                 print("")
                 global_min["memory"] = memory_prev
                 global_min["duration"] = duration_prev
-                attempts_counter = 0
+                attempts_counter -= 1
             else:
                 print("===== This min is bigger than existing one:  ", duration)
                 attempts_counter += 1
@@ -80,5 +82,5 @@ def invoke_lambda():
 def set_lambda_memory_level(memory: int):
     lambda_func.update_function_configuration(
         FunctionName=lambda_name,
-        MemorySize=int(memory)
+        MemorySize=memory
     )

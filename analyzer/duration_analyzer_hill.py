@@ -4,7 +4,6 @@ import base64
 import re
 import random
 import numpy as np
-import pandas as pd
 
 lambda_func = boto3.client('lambda')
 lambda_name = ""
@@ -21,6 +20,7 @@ def lambda_handler(event, context):
 def algorithm(memory: int):
     step = 128
     attempts_counter = 0
+    max_attempts = 5
     current_memory = memory
     current_duration = get_duration(lambda_name, current_memory)
     global_min = {
@@ -28,37 +28,30 @@ def algorithm(memory: int):
         "memory": current_memory
     }
 
-    while (attempts_counter < 3):
-        if (current_memory == 128):
-            raise Exception("current_memory is 128, stop")
+    while (attempts_counter <= max_attempts):
+        if (current_memory + step > 10240):
+            return current_memory
+        elif (current_memory - step < 128):
+            return current_memory if current_memory > 128 else 128
 
         duration_neighbbour_left = get_duration(lambda_name, current_memory - step)
         memory_neighbbour_left = current_memory - step
         create_value(duration_neighbbour_left, memory_neighbbour_left, duration_neighbbour_left*memory_neighbbour_left)
-        print("===== duration_neighbbour_left:  ", duration_neighbbour_left)
-        print("===== current_duration:  ", current_duration)
 
         current_duration = get_duration(lambda_name, current_memory)
         create_value(current_duration, current_memory, current_duration * current_memory)
 
-        duration_neighbbour_right = get_duration(lambda_name, current_memory + step)
-        memory_neighbbour_right = current_memory + step
-        create_value(duration_neighbbour_right, current_memory + step, memory_neighbbour_right*duration_neighbbour_right)
-        print("===== duration_neighbbour_right:  ", duration_neighbbour_right)
-
-        if (duration_neighbbour_left <= 0.99 * current_duration):  # duration is increasing
-            current_memory -= int(random.uniform(1, 2) * step)
-            print("===== memory decreased to:  ", current_memory)
-        elif (duration_neighbbour_right <= 0.99 * current_duration):  # duration is decreasing
+        if (current_duration/duration_neighbbour_left <= 0.99):  # duration is decreasing, increase memory
             current_memory += int(random.uniform(1, 2) * step)
-            print("===== memory increased to:  ", current_memory)
-        else:
+            print("===== duration is decreasing, memory increased to:  ", current_memory, duration_neighbbour_left, current_duration)
+        else: # duration is increasing or stays almost the same
+            print("------ duration is increasing, decrease memory to:  ", current_memory, duration_neighbbour_left, current_duration)
+            current_memory -= int(random.uniform(1, 2) * step)
+            attempts_counter = attempts_counter if attempts_counter==0 else attempts_counter+1
             if(current_duration / global_min["duration"] < 0.99):
-                print("===== setting new global min duration:  ", current_duration)
-                print("global_min[duration]   ", global_min["duration"])
+                print("===== setting new global min duration:  ", current_duration, global_min["duration"])
                 global_min["duration"] = current_duration
                 global_min["memory"] = current_memory
-            else:
                 attempts_counter += 1
     print(values)
     print("selected memory: ", global_min["memory"])
