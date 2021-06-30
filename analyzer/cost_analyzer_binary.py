@@ -11,11 +11,12 @@ values = []
 def lambda_handler(event, context):
     global lambda_name
     lambda_name = event['functionId']
-    binary_search(128, 2656)
+    binary_search(128, 10240)
     return {'statusCode': 200, 'body': json.dumps("response")}
 
 
 def binary_search(interval_start, interval_end):
+    aws_compute_coef = 0.00001667
     print(interval_end > interval_start)
 
     if interval_end > interval_start:
@@ -23,11 +24,11 @@ def binary_search(interval_start, interval_end):
         middle = int((interval_end + interval_start) / 2)
         print("middle:  ", middle)
         duration_middle = get_duration(middle)
-        value_middle = [duration_middle, middle, duration_middle * middle / 1024]
+        value_middle = [duration_middle, middle, duration_middle * middle * aws_compute_coef / 1024000]
         values.append(value_middle)
 
         duration_start = get_duration(interval_start)
-        value_start = [duration_start, interval_start, duration_start * interval_start / 1024]
+        value_start = [duration_start, interval_start, duration_start * interval_start * aws_compute_coef / 1024000]
         values.append(value_start)
 
         if (duration_start * interval_start <= middle * duration_middle): # if cost at start is less than cost in the middle

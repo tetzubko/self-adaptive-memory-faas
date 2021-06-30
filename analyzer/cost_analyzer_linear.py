@@ -17,6 +17,7 @@ def lambda_handler(event, context):
 
 
 def linear_algorithm():
+    aws_compute_coef = 0.00001667
     values = []
     memory_prev = 128
     attempts_counter = 0
@@ -25,7 +26,7 @@ def linear_algorithm():
 
     set_lambda_memory_level(memory_prev)
     duration_prev = invoke_lambda()
-    value = [duration_prev, memory_prev, duration_prev*memory_prev/1024]
+    value = [duration_prev, memory_prev, duration_prev * memory_prev * aws_compute_coef / 1024000]
     values.append(value)
 
     print("===== Setting first global_min: ", memory_prev)
@@ -40,7 +41,7 @@ def linear_algorithm():
         set_lambda_memory_level(memory)
         duration = int(invoke_lambda())
 
-        value = [duration, memory, duration*memory/1024]
+        value = [duration, memory, duration * memory * aws_compute_coef / 1024000]
         values.append(value)
 
         if duration * memory > duration_prev * memory_prev:
