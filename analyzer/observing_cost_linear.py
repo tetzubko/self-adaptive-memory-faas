@@ -5,29 +5,21 @@ from datetime import datetime
 import time
 import pandas as pd
 
-lambda_func = boto3.client('lambda')
-lambda_name=""
+lambda_client = boto3.client('lambda')
+lambda_name = ""
 
 def lambda_handler(event, context):
-    client = boto3.client('lambda')
-    response = client.list_functions()
+    global lambda_name
+    # lambda_name = event['Records'][0]['body']
+    lambda_name = event['lambdaName']
 
-    while "UPP-Develop-deployRequest" not in str(response):
-        m = re.search("NextMarker':.'([^']*)", str(response))
-        if (m):
-            response = client.list_functions(Marker=str(m.group(1)))
-
-    set_lambda_name(str(response))
     values = collect_data_from_logs()
     optimal_memory = perform_analysis_linear(values)
-    set_lambda_memory_level(int(optimal_memory))
+    if(optimal_memory):
+        set_lambda_memory_level(int(optimal_memory))
 
-    return {'statusCode': 200, 'body': json.dumps("response")}
+    return {'statusCode': 200, 'body': json.dumps("sucess")}
 
-def set_lambda_name(lambda_list: str):
-    global lambda_name
-    id = re.search("UPP-Develop-deployRequest.([^']*)", lambda_list).group(1)
-    lambda_name = "UPP-Develop-deployRequest-"+id
 
 # when sure refactor logs functions
 def get_logs_with_error():
@@ -50,7 +42,6 @@ def get_logs_with_error():
     response = None
 
     while response == None or response['status'] == 'Running':
-        print('Waiting for query to complete ...')
         time.sleep(5)
         response = client.get_query_results(
             queryId=query_id
@@ -65,13 +56,11 @@ def get_logs_with_error():
     return requestsWithError
 
 
-
 def collect_data_from_logs():
     requestsWithError = get_logs_with_error()
 
     client = boto3.client('logs', region_name='us-east-1')
-    query = "stats avg(@duration) as avgDuration by @memorySize as memory | filter @type in ['REPORT'] | filter @requestId not in "+str(requestsWithError)
-    print("query:  " + query)
+    query = "stats avg(@duration) as avgDuration by @memorySize as memory | filter @type in ['REPORT'] | filter @requestId not in " + str(requestsWithError)
     log_group = '/aws/lambda/' + lambda_name
 
     dt = datetime.now()
@@ -89,7 +78,6 @@ def collect_data_from_logs():
     response = None
 
     while response == None or response['status'] == 'Running':
-        print('Waiting for query to complete ...')
         time.sleep(5)
         response = client.get_query_results(
             queryId=query_id
@@ -113,7 +101,7 @@ def collect_data_from_logs():
     return values
 
 
-def perform_analysis_linear(values:[]):
+def perform_analysis_linear(values: []):
     analyzed_memories = []
     df = pd.DataFrame(values)
     df.sort_values(by=['allocated_memory_mb'], inplace=True)
@@ -156,12 +144,15 @@ def perform_analysis_linear(values:[]):
         value = [duration, memory, duration * memory / 1024]
         analyzed_memories.append(value)
 
+    print("-------  analyzed_memories")
     print(analyzed_memories)
+    print(global_min["memory"])
 
     return global_min["memory"]
 
+
 def set_lambda_memory_level(memory: int):
-    lambda_func.update_function_configuration(
+    lambda_client.update_function_configuration(
         FunctionName=lambda_name,
         MemorySize=memory
     )
