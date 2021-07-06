@@ -17,12 +17,11 @@ def lambda_handler(event, context):
 
 def binary_search(interval_start, interval_end):
     aws_compute_coef = 0.00001667
-    print(interval_end > interval_start)
-
     if interval_end > interval_start:
 
         middle = int((interval_end + interval_start) / 2)
         print("middle:  ", middle)
+
         duration_middle = get_duration(middle)
         value_middle = [duration_middle, middle, duration_middle * middle * aws_compute_coef / 1024000]
         values.append(value_middle)

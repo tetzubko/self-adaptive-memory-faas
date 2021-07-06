@@ -43,16 +43,14 @@ def optimal_algorithm():
         value = [duration, memory, duration * memory * aws_compute_coef / 1024000]
         values.append(value)
 
-        if (duration / duration_prev > 0.8):  # the duration stopped decreasing actively, see the value it had before
-            if (duration_prev / global_min["duration"] <= 0.8):
+        if (duration / duration_prev > 0.85):  # the duration stopped decreasing actively, see the value it had before
+            if (duration_prev / global_min["duration"] <= 0.85):
                 print("===== Setting new global_min duration:  ", duration_prev)
                 print("===== global_min duration:  ", global_min["duration"])
-                print("")
                 global_min["memory"] = memory_prev
                 global_min["duration"] = duration_prev
-                attempts_counter -= 1
             else:
-                print("===== This min is bigger than existing one:  ", duration)
+                print("===== This min is bigger than existing one:  ", duration_prev)
                 attempts_counter += 1
 
         duration_prev = duration

@@ -12,13 +12,14 @@ values = []
 def lambda_handler(event, context):
     global lambda_name
     lambda_name = event['functionId']
-    memory = hill_algorithm(600)
+    memory = hill_algorithm(1024)
     print(values)
     set_lambda_memory_level(memory)
     return {'statusCode': 200, 'body': json.dumps("response")}
 
 
 def hill_algorithm(memory: int):
+    aws_compute_coef = 0.00001667
     current_memory = memory
     step = 128
     attempts_counter=0
@@ -29,18 +30,16 @@ def hill_algorithm(memory: int):
     }
 
     while (attempts_counter <= max_attempts):
-        print("attempts_counter:  ", attempts_counter)
         if(current_memory+step>10240):
-            return current_memory
+            current_memory-=step
         elif (current_memory - step < 128):
-            return current_memory if current_memory>128 else 128
-
+            current_memory+=step
 
         duration_neighbbour_left = get_duration(current_memory - step)
         current_duration = get_duration(current_memory)
 
-        cost_left = duration_neighbbour_left * (current_memory - step)/1024
-        cost_current = current_duration * current_memory/1024
+        cost_left = duration_neighbbour_left * (current_memory - step)* aws_compute_coef / 1024000
+        cost_current = current_duration * current_memory * aws_compute_coef / 1024000
 
         current_value = [current_duration, current_memory, cost_current]
         left_value = [duration_neighbbour_left, current_memory - step,  cost_left]
@@ -48,19 +47,23 @@ def hill_algorithm(memory: int):
         values.append(current_value)
 
         if(cost_current <= cost_left): # cost is decreasing, increase mem
+            print(current_memory, current_memory - step)
+            print(cost_current * 1024000 / aws_compute_coef, cost_left * 1024000 / aws_compute_coef)
             current_memory += int(random.uniform(1, 2) * step)
-            print("------ cost is decreasing, increase memory:  ", cost_left, cost_current)
+            # print("------ cost is decreasing, increase memory:  ", current_memory, current_memory-step)
             attempts_counter = attempts_counter if attempts_counter==0 else attempts_counter+1
         else: # cost is increasing, decrease mem
+            print(current_memory, current_memory - step)
+            print(cost_current * 1024000 / aws_compute_coef, cost_left * 1024000 / aws_compute_coef)
             current_memory -= int(random.uniform(1, 2) * step)
-            print("------ cost is increasing, decrease memory:  ", cost_left, cost_current)
-            attempts_counter = attempts_counter if attempts_counter==0 else attempts_counter+1
+            attempts_counter = attempts_counter if attempts_counter == 0 else attempts_counter + 1
+            # print("------ cost is increasing, decrease memory:  ", current_memory, current_memory-step)
             if (cost_left < value["min_cost"]):
-                print("comparing", cost_left, value["min_cost"])
+                print("comparing", cost_left* 1024000 / aws_compute_coef, value["min_cost"]* 1024000 / aws_compute_coef)
                 value["min_cost"] = cost_left
-                value["memory"] = duration_neighbbour_left
+                value["memory"] = current_memory - step
                 attempts_counter += 1
-    return value["min_cost"]
+    return value["memory"]
 
 def get_duration(memory: int):
     set_lambda_memory_level(memory)

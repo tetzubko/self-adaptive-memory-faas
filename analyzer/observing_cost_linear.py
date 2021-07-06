@@ -6,47 +6,46 @@ import time
 import pandas as pd
 
 lambda_client = boto3.client('lambda')
+logs_client = boto3.client('logs', region_name='us-east-1')
 lambda_name = ""
 
 def lambda_handler(event, context):
     global lambda_name
-    # lambda_name = event['Records'][0]['body']
-    lambda_name = event['lambdaName']
+    lambda_name = event['Records'][0]['body']
+    # lambda_name = event['lambdaName']
 
     values = collect_data_from_logs()
-    optimal_memory = perform_analysis_linear(values)
+    optimal_memory=None
+    if(values):
+        optimal_memory = perform_analysis_linear(values)
     if(optimal_memory):
         set_lambda_memory_level(int(optimal_memory))
 
     return {'statusCode': 200, 'body': json.dumps("sucess")}
 
-
-# when sure refactor logs functions
-def get_logs_with_error():
-    client = boto3.client('logs', region_name='us-east-1')
-    query = "fields @requestId as requestsWithError| filter @message like /ERROR/"
+def query_logs (query):
     log_group = '/aws/lambda/' + lambda_name
-
     dt = datetime.now()
     seconds = int(dt.strftime('%s'))
 
-    start_query_response = client.start_query(
+    start_query_response = logs_client.start_query(
         logGroupName=log_group,
         startTime=seconds - 30 * 24 * 60 * 60,
         endTime=seconds,
         queryString=query,
     )
-
     query_id = start_query_response['queryId']
-
     response = None
-
     while response == None or response['status'] == 'Running':
         time.sleep(5)
-        response = client.get_query_results(
+        response = logs_client.get_query_results(
             queryId=query_id
         )
+    return response
 
+def get_logs_with_error():
+    query = "fields @requestId as requestsWithError| filter @message like /ERROR/"
+    response = query_logs(query)
     requestsWithError = []
     if response["results"]:
         for log in response["results"]:
@@ -58,31 +57,8 @@ def get_logs_with_error():
 
 def collect_data_from_logs():
     requestsWithError = get_logs_with_error()
-
-    client = boto3.client('logs', region_name='us-east-1')
     query = "stats avg(@duration) as avgDuration by @memorySize as memory | filter @type in ['REPORT'] | filter @requestId not in " + str(requestsWithError)
-    log_group = '/aws/lambda/' + lambda_name
-
-    dt = datetime.now()
-    seconds = int(dt.strftime('%s'))
-
-    start_query_response = client.start_query(
-        logGroupName=log_group,
-        startTime=seconds - 30 * 24 * 60 * 60,
-        endTime=seconds,
-        queryString=query,
-    )
-
-    query_id = start_query_response['queryId']
-
-    response = None
-
-    while response == None or response['status'] == 'Running':
-        time.sleep(5)
-        response = client.get_query_results(
-            queryId=query_id
-        )
-
+    response = query_logs(query)
     values = []
     if response["results"]:
         for log in response["results"]:
@@ -102,6 +78,8 @@ def collect_data_from_logs():
 
 
 def perform_analysis_linear(values: []):
+    print("----- values:")
+    print(values)
     analyzed_memories = []
     df = pd.DataFrame(values)
     df.sort_values(by=['allocated_memory_mb'], inplace=True)

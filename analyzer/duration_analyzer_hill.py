@@ -12,7 +12,7 @@ values = []
 def lambda_handler(event, context):
     global lambda_name
     lambda_name = event['functionId']
-    memory = algorithm(1000)  # can be random number
+    memory = algorithm(1024)  # can be random number
     set_lambda_memory_level(lambda_name, memory)
     return {'statusCode': 200, 'body': json.dumps("response")}
 
@@ -30,9 +30,9 @@ def algorithm(memory: int):
 
     while (attempts_counter <= max_attempts):
         if (current_memory + step > 10240):
-            return current_memory
+            current_memory -= step
         elif (current_memory - step < 128):
-            return current_memory if current_memory > 128 else 128
+            current_memory += step
 
         duration_neighbbour_left = get_duration(lambda_name, current_memory - step)
         memory_neighbbour_left = current_memory - step
@@ -46,20 +46,22 @@ def algorithm(memory: int):
             print("===== duration is decreasing, memory increased to:  ", current_memory, duration_neighbbour_left, current_duration)
         else: # duration is increasing or stays almost the same
             print("------ duration is increasing, decrease memory to:  ", current_memory, duration_neighbbour_left, current_duration)
-            current_memory -= int(random.uniform(1, 2) * step)
             attempts_counter = attempts_counter if attempts_counter==0 else attempts_counter+1
             if(current_duration / global_min["duration"] < 0.99):
                 print("===== setting new global min duration:  ", current_duration, global_min["duration"])
+                print(current_memory)
                 global_min["duration"] = current_duration
                 global_min["memory"] = current_memory
                 attempts_counter += 1
+            current_memory -= int(random.uniform(1, 2) * step)
     print(values)
     print("selected memory: ", global_min["memory"])
 
     return global_min["memory"]
 
 def create_value(duration: int, memory: int, cost):
-    value = [duration, memory, cost / 1024]
+    aws_compute_coef = 0.00001667
+    value = [duration, memory, cost * aws_compute_coef / 1024000]
     values.append(value)
 
 def get_duration(function_name: str, memory: int):

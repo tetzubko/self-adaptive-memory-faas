@@ -17,6 +17,7 @@ def lambda_handler(event, context):
 
 
 def optimal_algorithm():
+    aws_compute_coef = 0.00001667
     values = []
     start_memory = 128
     end_memory = 10240
@@ -33,7 +34,7 @@ def optimal_algorithm():
 
     left_value = coeficient * max_duration / max_duration + (1 - coeficient) * max_duration * start_memory / max_cost
 
-    value = [max_duration, start_memory, max_duration * start_memory / 1024, left_value]
+    value = [max_duration, start_memory, max_duration * start_memory * aws_compute_coef / 1024000, left_value]
     values.append(value)
 
     global_min = {
@@ -48,7 +49,7 @@ def optimal_algorithm():
         current_duration = int(invoke_lambda())
         right_value = coeficient * current_duration / max_duration + (1 - coeficient) * current_duration * current_memory / max_cost
 
-        value = [current_duration, current_memory, current_duration * current_memory / 1024, right_value]
+        value = [current_duration, current_memory, current_duration * current_memory * aws_compute_coef / 1024000, right_value]
         values.append(value)
 
         if left_value < right_value:
