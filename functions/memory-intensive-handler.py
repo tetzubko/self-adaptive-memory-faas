@@ -16,8 +16,5 @@ def lambda_handler(event, context):
 
 def memoryConsumingFunction():
     d = {}
-    i = 0;
     for i in range(0, 1000000):
-        d[i] = 'A' * 1024
-        if i % 10000 == 0:
-            2+2
+        d[i] = 1  #'A' * 1024

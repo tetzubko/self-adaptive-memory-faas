@@ -35,25 +35,26 @@ def hill_algorithm(memory: int):
         elif (current_memory - step < 128):
             current_memory+=step
 
-        duration_neighbbour_left = get_duration(current_memory - step)
+        memory_left=current_memory - step
+        duration_neighbbour_left = get_duration(memory_left)
         current_duration = get_duration(current_memory)
 
-        cost_left = duration_neighbbour_left * (current_memory - step)* aws_compute_coef / 1024000
+        cost_left = duration_neighbbour_left * (memory_left)* aws_compute_coef / 1024000
         cost_current = current_duration * current_memory * aws_compute_coef / 1024000
 
         current_value = [current_duration, current_memory, cost_current]
-        left_value = [duration_neighbbour_left, current_memory - step,  cost_left]
+        left_value = [duration_neighbbour_left, memory_left,  cost_left]
         values.append(left_value)
         values.append(current_value)
 
         if(cost_current <= cost_left): # cost is decreasing, increase mem
-            print(current_memory, current_memory - step)
+            print(current_memory, memory_left)
             print(cost_current * 1024000 / aws_compute_coef, cost_left * 1024000 / aws_compute_coef)
             current_memory += int(random.uniform(1, 2) * step)
             # print("------ cost is decreasing, increase memory:  ", current_memory, current_memory-step)
             attempts_counter = attempts_counter if attempts_counter==0 else attempts_counter+1
         else: # cost is increasing, decrease mem
-            print(current_memory, current_memory - step)
+            print(current_memory, memory_left)
             print(cost_current * 1024000 / aws_compute_coef, cost_left * 1024000 / aws_compute_coef)
             current_memory -= int(random.uniform(1, 2) * step)
             attempts_counter = attempts_counter if attempts_counter == 0 else attempts_counter + 1
@@ -61,7 +62,7 @@ def hill_algorithm(memory: int):
             if (cost_left < value["min_cost"]):
                 print("comparing", cost_left* 1024000 / aws_compute_coef, value["min_cost"]* 1024000 / aws_compute_coef)
                 value["min_cost"] = cost_left
-                value["memory"] = current_memory - step
+                value["memory"] = memory_left
                 attempts_counter += 1
     return value["memory"]
 

@@ -19,22 +19,28 @@ def lambda_handler(event, context):
 def optimal_algorithm():
     aws_compute_coef = 0.00001667
     memory_prev = 128
-    attempts_counter = 0
     values = []
-    max_attempts = 3
     step_increment = 128
 
     set_lambda_memory_level(memory_prev)
     duration_prev = invoke_lambda()
-    global_min = {
-        "duration": duration_prev,
-        "memory": memory_prev
-    }
 
     value = [duration_prev, memory_prev, duration_prev * memory_prev * aws_compute_coef / 1024000]
     values.append(value)
 
-    while (attempts_counter <= max_attempts):
+    memory = memory_prev + step_increment
+    set_lambda_memory_level(memory)
+    duration = int(invoke_lambda())
+
+    value = [duration, memory, duration * memory * aws_compute_coef / 1024000]
+    values.append(value)
+
+    for x in range(0, 15):
+        if(1- (duration/duration_prev) < 0.1):  # the duration stopped decreasing actively, see the value it had before
+            print("stopped on:  ", memory_prev)
+
+        duration_prev = duration
+        memory_prev = memory
 
         memory = memory_prev + step_increment
         set_lambda_memory_level(memory)
@@ -43,23 +49,9 @@ def optimal_algorithm():
         value = [duration, memory, duration * memory * aws_compute_coef / 1024000]
         values.append(value)
 
-        if (duration / duration_prev > 0.85):  # the duration stopped decreasing actively, see the value it had before
-            if (duration_prev / global_min["duration"] <= 0.85):
-                print("===== Setting new global_min duration:  ", duration_prev)
-                print("===== global_min duration:  ", global_min["duration"])
-                global_min["memory"] = memory_prev
-                global_min["duration"] = duration_prev
-            else:
-                print("===== This min is bigger than existing one:  ", duration_prev)
-                attempts_counter += 1
-
-        duration_prev = duration
-        memory_prev = memory
-
     print(values)
-    print("selected memory:  ", global_min["memory"])
 
-    return global_min["memory"]
+    return memory
 
 
 def invoke_lambda():

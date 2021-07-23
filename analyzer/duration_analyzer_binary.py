@@ -15,7 +15,6 @@ def lambda_handler(event, context):
     search_memory_interval(128, 10240)
     return {'statusCode': 200, 'body': json.dumps("response")}
 
-
 def search_memory_interval(interval_start, interval_end):
     aws_compute_coef = 0.00001667
     if (interval_end > interval_start):
