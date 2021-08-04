@@ -26,10 +26,10 @@ def lambda_handler(event, context):
     for x in lambdas:
         if (x not in analysed_functions):
             print(x)
-        # sqs.send_message(
-        #     QueueUrl='https://sqs.us-east-1.amazonaws.com/277644480311/tetianaMemoryAllocation',
-        #     MessageBody=x
-        # )
+            sqs.send_message(
+                QueueUrl='https://sqs.us-east-1.amazonaws.com/277644480311/tetianaMemoryAllocation',
+                MessageBody=x
+            )
 
     return {'statusCode': 200, 'body': json.dumps("")}
 

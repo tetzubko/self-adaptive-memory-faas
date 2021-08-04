@@ -25,6 +25,7 @@ def lambda_handler(event, context):
     if(optimal_memory):
         set_lambda_memory_level(int(optimal_memory))
         add_to_analysed_functions(str(optimal_memory))
+        send_notification(str(optimal_memory))
 
     return {'statusCode': 200, 'body': json.dumps("sucess")}
 
@@ -173,3 +174,11 @@ def add_to_analysed_functions(memory: str):
             }
         })
     print("add to analysed  ", lambda_name, memory)
+
+def send_notification(optimal_memory: str):
+    sns_client = boto3.client('sns')
+    sns_client.publish(
+        TopicArn='arn:aws:sns:us-east-1:277644480311:tetianaAllocatedMemoryChanged',
+        Message='New memory of ' + optimal_memory + ' is allocated to ' + lambda_name,
+        Subject='Allocated Memory Change'
+    )

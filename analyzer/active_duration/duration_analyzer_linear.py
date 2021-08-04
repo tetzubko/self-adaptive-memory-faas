@@ -23,6 +23,7 @@ def linear_algorithm():
     values = []
     max_attempts = 3
     step_increment = 128
+    min_duration = 0
 
     set_lambda_memory_level(memory_prev)
     duration_prev = invoke_lambda()
@@ -33,7 +34,7 @@ def linear_algorithm():
     value = [duration_prev, memory_prev, memory_prev * duration_prev * aws_compute_coef / 1024000]
     values.append(value)
 
-    while (attempts_counter <= max_attempts):
+    while (attempts_counter < max_attempts):
 
         memory = memory_prev + step_increment
         set_lambda_memory_level(memory)
@@ -42,15 +43,19 @@ def linear_algorithm():
         value = [duration, memory, duration * memory * aws_compute_coef / 1024000]
         values.append(value)
 
-        if (duration /duration_prev > 0.99):  # if the duration increased
-            if(duration_prev / global_min["duration"] < 0.99):  # it is a new global minimum, if the new minimum is smaller than existing one
-                print("===== Setting new global_min duration:  ", duration_prev)
-                print("===== global_min duration:  ", global_min["duration"])
-                global_min["memory"] = memory_prev
-                global_min["duration"] = duration_prev
-            else:
-                print("===== This min is bigger than existing one:  ", duration)
-                attempts_counter += 1
+        if(duration /duration_prev < 0.99):
+            if(attempts_counter == 0):
+                global_min["memory"] = memory
+                global_min["duration"] = duration
+                print("global min duration:  ", global_min["duration"])
+            elif(duration/min_duration <  0.99):
+                global_min["memory"] = memory
+                global_min["duration"] = duration
+                print("global min duration with not zero counter:  ", global_min["duration"])
+        else:
+            attempts_counter += 1
+            min_duration = global_min["duration"]
+            print("attempts counter:  ", attempts_counter)
 
         duration_prev = duration
         memory_prev = memory
