@@ -22,13 +22,13 @@ def binary_search(interval_start, interval_end):
         middle = int((interval_end + interval_start) / 2)
         print("middle:  ", middle)
 
-        duration_middle = get_duration(middle)
-        value_middle = [duration_middle, middle, duration_middle * middle * aws_compute_coef / 1024000]
-        values.append(value_middle)
-
         duration_start = get_duration(interval_start)
         value_start = [duration_start, interval_start, duration_start * interval_start * aws_compute_coef / 1024000]
         values.append(value_start)
+
+        duration_middle = get_duration(middle)
+        value_middle = [duration_middle, middle, duration_middle * middle * aws_compute_coef / 1024000]
+        values.append(value_middle)
 
         if (duration_start * interval_start <= middle * duration_middle): # if cost at start is less than cost in the middle
             print("part one:  ", interval_start, middle)

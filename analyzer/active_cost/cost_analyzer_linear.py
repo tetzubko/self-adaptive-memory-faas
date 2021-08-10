@@ -25,7 +25,7 @@ def linear_algorithm():
     step_increment = 128
 
     set_lambda_memory_level(memory_prev)
-    duration_prev = invoke_lambda()
+    duration_prev = get_duration()
     value = [duration_prev, memory_prev, duration_prev * memory_prev * aws_compute_coef / 1024000]
     values.append(value)
 
@@ -39,7 +39,7 @@ def linear_algorithm():
 
         memory = memory_prev + step_increment
         set_lambda_memory_level(memory)
-        duration = int(invoke_lambda())
+        duration = int(get_duration())
 
         value = [duration, memory, duration * memory * aws_compute_coef / 1024000]
         values.append(value)
@@ -49,7 +49,7 @@ def linear_algorithm():
                 print("===== Setting new global_min:  ", memory_prev)
                 global_min["memory"] = memory_prev
                 global_min["duration"] = duration_prev
-                attempts_counter = 0
+                # attempts_counter = 0
             else:
                 print("===== this minimum is bigger than global one")
                 attempts_counter += 1  # this minimum is bigger than existing one
@@ -61,7 +61,7 @@ def linear_algorithm():
     return global_min["memory"]
 
 
-def invoke_lambda():
+def get_duration():
     durations = []
     for _ in range(5):
         response = lambda_func.invoke(
