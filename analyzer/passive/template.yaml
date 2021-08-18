@@ -1,0 +1,90 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: AWS SAM template for Lambda Optimization Tool
+Parameters:
+  PartnerRole:
+    Type: String
+    Default: arn:aws:iam::277644480311:role/upscale-partner-role
+Resources:
+  functionsCollector:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: collect_functions.lambda_handler
+      Runtime: python3.8
+      CodeUri: collect_functions/
+      Description: ''
+      MemorySize: 512
+      Timeout: 900
+      Role: !Ref PartnerRole
+      Tags:
+        project: memoryConfiguration
+      Environment:
+        Variables:
+          - SQS_URL: !GetAtt functionsSqsQueue.QueueUrl
+          - DB_NAME: !GetAtt analyzedFunctionsDB.TableName
+
+  analyzer:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: analyzer.lambda_handler
+      Runtime: python3.8
+      CodeUri: analyzer/
+      Description: ''
+      MemorySize: 512
+      Timeout: 900
+      Role: !Ref PartnerRole
+      Events:
+        SQSEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt functionsSqsQueue.Arn
+            BatchSize: 10
+      Tags:
+        project: memoryConfiguration
+      Layers:
+        - !Ref pandasLayer
+        - AWSLambda-Python38-SciPy1x
+      Environment:
+        Variables:
+          - DB_NAME: !GetAtt analyzedFunctionsDB.TableName
+
+  pandasLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: pandas
+      Description: Pandas layer
+      ContentUri: python
+      CompatibleRuntimes:
+        - python3.8
+
+  analyzedFunctionsDB:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: analyzedFunctions
+      AttributeDefinitions:
+        - AttributeName: functionID
+          AttributeType: S
+      KeySchema:
+        - AttributeName: functionID
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
+  startAnalysisScheduledRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: "Invoke analysis event"
+      ScheduleExpression: "rate(4 hours)"
+      State: "ENABLED"
+      Targets:
+        -
+          Arn:
+            Fn::GetAtt:
+              - "functionsCollector"
+              - "Arn"
+          Id: "startAnalysisScheduledRule"
+
+  functionsSqsQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      FifoQueue: False
+      QueueName: functionsQueue
