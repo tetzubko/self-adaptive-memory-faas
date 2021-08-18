@@ -41,13 +41,13 @@ def algorithm(memory: int):
         current_duration = get_duration(lambda_name, current_memory)
         create_value(current_duration, current_memory, current_duration * current_memory)
 
-        if (current_duration/duration_neighbbour_left <= 0.99):  # duration is decreasing, increase memory
+        if (current_duration/duration_neighbbour_left <= 0.9):  # duration is decreasing, increase memory
             current_memory += int(random.uniform(1, 2) * step)
             print("===== duration is decreasing, memory increased to:  ", current_memory, duration_neighbbour_left, current_duration)
         else: # duration is increasing or stays almost the same
             print("------ duration is increasing, decrease memory to:  ", current_memory, duration_neighbbour_left, current_duration)
             attempts_counter = attempts_counter if attempts_counter==0 else attempts_counter+1
-            if(current_duration / global_min["duration"] < 0.99):
+            if(current_duration / global_min["duration"] < 0.9):
                 print("===== setting new global min duration:  ", current_duration, global_min["duration"])
                 print(current_memory)
                 global_min["duration"] = current_duration

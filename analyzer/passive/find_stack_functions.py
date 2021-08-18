@@ -11,7 +11,10 @@ db_client = boto3.client('dynamodb')
 def lambda_handler(event, context):
     stackName = event["stackName"]
     lambdas = []
+
     response = lambda_client.list_functions()
+    r = findLambdas(response, stackName)
+    lambdas = lambdas + r
 
     while "NextMarker" in str(response):
         m = re.search("NextMarker':.'([^']*)", str(response))
@@ -19,6 +22,10 @@ def lambda_handler(event, context):
             response = lambda_client.list_functions(Marker=str(m.group(1)))
             r = findLambdas(response, stackName)
             lambdas = lambdas + r
+
+    response = lambda_client.list_functions()
+    r = findLambdas(response, stackName)
+    lambdas = lambdas + r
 
     # filter out lambdas, which were already analysed
     analysed_functions = getAnalysedLambdas()

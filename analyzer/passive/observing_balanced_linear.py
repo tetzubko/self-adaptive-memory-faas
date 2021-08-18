@@ -6,10 +6,10 @@ import time
 import pandas as pd
 
 lambda_client = boto3.client('lambda')
-logs_client = boto3.client('logs', region_name='us-east-1')
+logs_client = boto3.client('logs', region_name='eu-central-1')
 lambda_name = ""
 db_client = boto3.client('dynamodb')
-table_name = "tetianaAnalysedFunctions"
+table_name = "passive-experiment-analysed-tables"
 analyzed_memories = []
 
 def lambda_handler(event, context):
@@ -167,9 +167,10 @@ def add_to_analysed_functions(memory: str):
     print("add to analysed  ", lambda_name, memory)
 
 def send_notification(optimal_memory: str):
-    sns_client = boto3.client('sns')
-    sns_client.publish(
-        TopicArn='arn:aws:sns:us-east-1:277644480311:tetianaAllocatedMemoryChanged',
-        Message='New memory of ' + optimal_memory + ' is allocated to ' + lambda_name,
-        Subject='Allocated Memory Change'
-    )
+    print("send notification")
+    # sns_client = boto3.client('sns')
+    # sns_client.publish(
+    #     TopicArn='arn:aws:sns:us-east-1:277644480311:tetianaAllocatedMemoryChanged',
+    #     Message='New memory of ' + optimal_memory + ' is allocated to ' + lambda_name,
+    #     Subject='Allocated Memory Change'
+    # )
