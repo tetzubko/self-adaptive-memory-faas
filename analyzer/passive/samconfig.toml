@@ -1,0 +1,11 @@
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "passive"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-1letw13o93y36"
+s3_prefix = "passive"
+region = "eu-central-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "PartnerRole=\"arn:aws:iam::385973373219:role/BasicLambda\""

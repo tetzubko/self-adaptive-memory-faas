@@ -22,15 +22,17 @@ def optimal_algorithm():
     start_memory = 128
     end_memory = 10240
     step_increment = 128
-    max_attempts = 5
+    max_attempts = 1
     attempts_counter = 0
     coeficient = 0.5
 
     set_lambda_memory_level(start_memory)
     max_duration = int(get_duration())
+    print("max_duration    ", max_duration)
 
     set_lambda_memory_level(end_memory)
     max_cost = get_duration() * end_memory
+    print("max_cost    ", max_cost)
 
     left_value = coeficient * max_duration / max_duration + (1 - coeficient) * max_duration * start_memory / max_cost
 
@@ -52,13 +54,15 @@ def optimal_algorithm():
         value = [current_duration, current_memory, current_duration * current_memory * aws_compute_coef / 1024000, right_value]
         values.append(value)
 
+        attempts_counter = attempts_counter if attempts_counter == 0 else attempts_counter + 1
+
         if left_value < right_value:
             if left_value <= global_min["value"]:  # it is a new global minimum
                 print("===== Setting new global_min:  ", start_memory)
                 global_min["memory"] = start_memory
                 global_min["value"] = left_value
             else:
-                print("===== this minimum is bigger than global one")
+                print("===== this minimum is bigger than global one", left_value, global_min["value"])
                 attempts_counter += 1  # this minimum is bigger than existing one
 
         left_value = right_value
