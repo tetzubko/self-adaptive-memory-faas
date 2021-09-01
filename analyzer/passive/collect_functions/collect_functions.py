@@ -6,9 +6,11 @@ import os
 lambda_client = boto3.client('lambda')
 sqs = boto3.client('sqs')
 db_client = boto3.client('dynamodb')
+stack_name = ""
 
 
 def lambda_handler(event, context):
+    global stack_name
     stack_name = event["stack_name"]
     lambdas = []
 
@@ -32,10 +34,13 @@ def lambda_handler(event, context):
 
     for x in lambdas:
         if (x not in analysed_functions):
-            print(x)
+            body = {
+                "stack_name": stack_name,
+                "lambda_name": x
+            }
             sqs.send_message(
                 QueueUrl=os.environ['SQS_URL'],
-                MessageBody=x
+                MessageBody=json.dumps(body)
             )
 
     return {'statusCode': 200, 'body': json.dumps("")}

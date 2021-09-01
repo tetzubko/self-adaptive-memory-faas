@@ -22,12 +22,32 @@ Resources:
         Variables:
           SQS_URL: !Ref functionsSqsQueue
           DB_NAME: !Ref analyzedFunctionsDB
-  analyzer:
+  find_optimal_memory:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: analyzer.lambda_handler
+      Handler: find_optimal_memory.lambda_handler
       Runtime: python3.8
-      CodeUri: analyzer/
+      CodeUri: find_optimal_memory/
+      Description: ''
+      MemorySize: 512
+      Timeout: 600
+      Role: !Ref PartnerRole
+      Tags:
+        project: memoryConfiguration
+      Layers:
+        - !Ref pandasLayer
+        - arn:aws:lambda:eu-central-1:292169987271:layer:AWSLambda-Python38-SciPy1x:29
+      Environment:
+        Variables:
+          DB_NAME: !Ref analyzedFunctionsDB
+          SNS_ARN: !Ref notificationSNS
+          ALGORITHM_ARN: !GetAtt optimizeCost.Arn
+  optimizeCost:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: optimize_cost.lambda_handler
+      Runtime: python3.8
+      CodeUri: optimize_cost/
       Description: ''
       MemorySize: 512
       Timeout: 600
@@ -97,7 +117,7 @@ Resources:
     Properties:
       Enabled: True
       EventSourceArn: !GetAtt functionsSqsQueue.Arn
-      FunctionName: !GetAtt analyzer.Arn
+      FunctionName: !GetAtt find_optimal_memory.Arn
 
   notificationSNS:
     Type: AWS::SNS::Topic
