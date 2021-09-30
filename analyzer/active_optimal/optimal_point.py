@@ -42,7 +42,7 @@ def optimal_algorithm():
         "memory": start_memory
     }  # first possible global minimum
 
-    while (attempts_counter <= max_attempts):
+    while (attempts_counter < max_attempts):
 
         current_memory = start_memory + step_increment
         set_lambda_memory_level(current_memory)
@@ -52,6 +52,7 @@ def optimal_algorithm():
         value = [current_duration, current_memory, current_duration * current_memory * aws_compute_coef / 1024000, right_value]
         values.append(value)
 
+        attempts_counter = attempts_counter if attempts_counter == 0 else attempts_counter + 1
         if left_value < right_value:
             if left_value <= global_min["value"]:  # it is a new global minimum
                 print("===== Setting new global_min:  ", start_memory)

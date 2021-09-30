@@ -17,13 +17,12 @@ rcParams["font.size"] = 12
 
 ax1 = fig.add_subplot(1, 1, 1)
 ax2 = ax1.twinx()
-line1 = ax1.plot(df["memory"], df["duration"], "--b", label='Duration', linewidth=2)
+line1 = ax1.plot(df["memory"], df["duration"], "--", label='Duration', linewidth=2, color="#0065bd")
 ax1.legend(['Duration'], loc='upper left')
 # ax1.plot(1536, 172, 'g*')
-line2 = ax2.plot(df["memory"], df["cost"], "-.r", label='Cost', linewidth=2)
+line2 = ax2.plot(df["memory"], df["cost"], "-.", label='Cost', linewidth=2, color="#e37222")
 ax2.legend(['Cost'], loc='upper right')
 ax2.set(ylim=(0.0, 0.00002))
-ax2.ticklabel_format(style='plain')
 
 #annotations
 plt.text(503,0.900000625e-05, 'A', fontsize=12)
@@ -38,8 +37,8 @@ plt.grid(axis="both", color="0.9", linestyle='-', linewidth=1)
 # ax1.grid(axis="x", color="0.9", linestyle='-', linewidth=1)
 # ax1.grid(axis="y", color="0.7", linestyle='--', linewidth=1)
 
-ax1.set_ylabel('Request Durations (ms)', color='blue')
-ax2.set_ylabel('Request Cost ($)', color='red')
+ax1.set_ylabel('Durations (ms)', color='#0065bd')
+ax2.set_ylabel('Cost ($)', color='#e37222')
 ax1.set_xlabel('Memory (MB)')
 plt.show()
 fig.savefig("../../images/4_linear_cost.png", format='png', dpi=300, bbox_inches='tight')
