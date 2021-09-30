@@ -1,6 +1,7 @@
 import json
 import boto3
 import re
+import os
 
 lambda_client = boto3.client('lambda')
 sqs = boto3.client('sqs')
@@ -33,7 +34,7 @@ def lambda_handler(event, context):
         if (x not in analysed_functions):
             print(x)
             sqs.send_message(
-                QueueUrl='https://sqs.us-east-1.amazonaws.com/277644480311/tetianaMemoryAllocation',
+                QueueUrl=os.environ['SQS_URL'],
                 MessageBody=x
             )
 
@@ -46,7 +47,7 @@ def findLambdas(response, stackName):
 
 def getAnalysedLambdas():
     response = db_client.scan(
-        TableName='tetianaAnalysedFunctions',
+        TableName=os.environ['DB_NAME'],
         AttributesToGet=[
             'functionID'
         ]

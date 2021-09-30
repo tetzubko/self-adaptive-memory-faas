@@ -1,0 +1,119 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: AWS SAM template for Lambda Optimization Tool
+Parameters:
+  PartnerRole:
+    Type: String
+    Default: arn:aws:iam::385973373219:role/BasicLambda
+Resources:
+  functionsCollector:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: collect_functions.lambda_handler
+      Runtime: python3.8
+      CodeUri: functionsCollector
+      Description: ''
+      MemorySize: 512
+      Timeout: 180
+      Role:
+        Ref: PartnerRole
+      Tags:
+        project: memoryConfiguration
+      Environment:
+        Variables:
+          SQS_URL:
+            Ref: functionsSqsQueue
+          DB_NAME:
+            Ref: analyzedFunctionsDB
+  analyzer:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: analyzer.lambda_handler
+      Runtime: python3.8
+      CodeUri: analyzer
+      Description: ''
+      MemorySize: 512
+      Timeout: 600
+      Role:
+        Ref: PartnerRole
+      Tags:
+        project: memoryConfiguration
+      Layers:
+      - Ref: pandasLayer
+      - arn:aws:lambda:eu-central-1:292169987271:layer:AWSLambda-Python38-SciPy1x:29
+      Environment:
+        Variables:
+          DB_NAME:
+            Ref: analyzedFunctionsDB
+          SNS_ARN:
+            Ref: notificationSNS
+  sqsAnalyzerTrigger:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      Enabled: true
+      EventSourceArn:
+        Fn::GetAtt:
+        - functionsSqsQueue
+        - Arn
+      FunctionName:
+        Fn::GetAtt:
+        - analyzer
+        - Arn
+  pandasLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: pandas
+      Description: Pandas layer
+      ContentUri: ../../pandas
+      CompatibleRuntimes:
+      - python3.8
+  analyzedFunctionsDB:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: analyzedFunctions
+      AttributeDefinitions:
+      - AttributeName: functionID
+        AttributeType: S
+      KeySchema:
+      - AttributeName: functionID
+        KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+  startAnalysisScheduledRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: Invoke analysis event
+      ScheduleExpression: rate(4 hours)
+      State: ENABLED
+      Targets:
+      - Arn:
+          Fn::GetAtt:
+          - functionsCollector
+          - Arn
+        Id: functionsCollector
+  permissionForScheduelerToInvokeCollectFunctionsLambda:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: functionsCollector
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn:
+        Fn::GetAtt:
+        - startAnalysisScheduledRule
+        - Arn
+  functionsSqsQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: functionsQueue
+      VisibilityTimeout: 600
+  notificationSNS:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: memoryUpdate
+  subscriptionSNS:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Protocol: email
+      Endpoint: tetiana.zubko@sap.com
+      TopicArn:
+        Ref: notificationSNS

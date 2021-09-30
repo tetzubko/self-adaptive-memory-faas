@@ -17,20 +17,22 @@ rcParams["font.size"] = 10
 
 ax1 = fig.add_subplot(1, 1, 1)
 ax2 = ax1.twinx()
-line1 = ax1.plot(df["memory"], df["duration"], "--", color="#0065bd", label='Duration')
+line1 = ax1.plot(df["memory"], df["duration"], "-x", color="#0065bd", label='Duration')
 ax1.legend(['Duration'], loc='upper left')
 # ax1.plot(1536, 172, 'g*')
-line2 = ax2.plot(df["memory"], df["cost"], "-.", color="#e37222", label='Cost')
+line2 = ax2.plot(df["memory"], df["cost"], "-^", color="#e37222", label='Cost')
 ax2.legend(['Cost'], loc='upper right')
 ax2.set(ylim=(0.0, 0.000006))
 # ax2.ticklabel_format(style='plain')
 # plt.plot(1812,6.194598046875001e-07, 'g*')
 
 plt.xticks(df["memory"])
-plt.grid(axis="both", color="0.9", linestyle='-', linewidth=1)
+#plt.grid(axis="both", color="0.9", linestyle='-', linewidth=1)
 
 ax1.set_ylabel('Duration (ms)', color='#0065bd')
 ax2.set_ylabel('Cost ($)', color='#e37222')
 ax1.set_xlabel('Memory (MB)')
+ax1.set_xticklabels(df["memory"], rotation=90, ha='center')
+
 plt.show()
-# fig.savefig("../../images/5_network_intensive.png", format='png', dpi=300, bbox_inches='tight')
+fig.savefig("../images/5_cpu_intensive.png", format='png', dpi=300, bbox_inches='tight')

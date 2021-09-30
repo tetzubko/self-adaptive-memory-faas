@@ -22,15 +22,17 @@ def optimal_algorithm():
     start_memory = 128
     end_memory = 10240
     step_increment = 128
-    max_attempts = 5
+    max_attempts = 1
     attempts_counter = 0
     coeficient = 0.5
 
     set_lambda_memory_level(start_memory)
     max_duration = int(get_duration())
+    print("max_duration    ", max_duration)
 
     set_lambda_memory_level(end_memory)
     max_cost = get_duration() * end_memory
+    print("max_cost    ", max_cost)
 
     left_value = coeficient * max_duration / max_duration + (1 - coeficient) * max_duration * start_memory / max_cost
 
@@ -59,7 +61,7 @@ def optimal_algorithm():
                 global_min["memory"] = start_memory
                 global_min["value"] = left_value
             else:
-                print("===== this minimum is bigger than global one")
+                print("===== this minimum is bigger than global one", left_value, global_min["value"])
                 attempts_counter += 1  # this minimum is bigger than existing one
 
         left_value = right_value
