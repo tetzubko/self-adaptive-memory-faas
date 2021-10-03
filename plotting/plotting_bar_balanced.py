@@ -16,17 +16,20 @@ plt.figure(figsize=(8, 5))
 ax.grid(axis="both", color="0.9", linestyle='-', linewidth=1)
 ax.set_axisbelow(True)
 
-opt_vals = [18, 11, 13, 9]
-due_change = [8, 4, 9, 3]
+# opt_vals = [18, 11, 13, 9]
+# due_change = [8, 4, 9, 3]
+# ax.set_ylabel('Number of iterations', fontsize = 12.0)
 
-
+opt_vals = [215578, 7383, 10960, 53084]
+due_change = [154332, 3056, 4689, 15717]
+ax.set_ylabel('Number of iterations', fontsize = 12.0)
 
 p1 = ax.bar(x - width, opt_vals, width=width, capsize=2, ecolor='blue', edgecolor='black', label='Optimization Values', color = 'w', hatch = 'xxx' )
 p2 = ax.bar(x, due_change, width=width, capsize=2, ecolor='blue', edgecolor='black', label='Duration Change', color = 'w', hatch = '---' )
 #p3 = ax.bar(x + width, gd, width=width, capsize=2, ecolor='blue', edgecolor='black', label='Gradient Descent', color = 'w', hatch = '++' )
 
 
-ax.set_ylabel('Number of iterations', fontsize = 12.0)
+ax.set_xlabel('Function Type', fontsize = 12.0)
 ax.set_xticks(x-0.15)
 ax.set_xticklabels(labels, fontsize = 10.0)
 ax.legend(fontsize = 10.0)
@@ -49,8 +52,7 @@ autolabel(p2)
 
 fig.tight_layout()
 
-#plt.show()
-fig.savefig("../images/4_iterations_per_algorithm_balanced.pdf", format='pdf', dpi=300, bbox_inches='tight')
-
+plt.show()
+fig.savefig("../../images/5_duration_per_algorithm_balanced.pdf", format='pdf', dpi=300, bbox_inches='tight')
 
 
