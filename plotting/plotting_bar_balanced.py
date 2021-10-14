@@ -24,7 +24,7 @@ opt_vals = [215578, 7383, 10960, 53084]
 due_change = [154332, 3056, 4689, 15717]
 ax.set_ylabel('Number of iterations', fontsize = 12.0)
 
-p1 = ax.bar(x - width, opt_vals, width=width, capsize=2, ecolor='blue', edgecolor='black', label='Optimization Values', color = 'w', hatch = 'xxx' )
+p1 = ax.bar(x - width, opt_vals, width=width, capsize=2, ecolor='blue', edgecolor='black', label='Optimization Value', color = 'w', hatch = 'xxx' )
 p2 = ax.bar(x, due_change, width=width, capsize=2, ecolor='blue', edgecolor='black', label='Duration Change', color = 'w', hatch = '---' )
 #p3 = ax.bar(x + width, gd, width=width, capsize=2, ecolor='blue', edgecolor='black', label='Gradient Descent', color = 'w', hatch = '++' )
 
