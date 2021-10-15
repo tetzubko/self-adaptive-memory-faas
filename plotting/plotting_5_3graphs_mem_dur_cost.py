@@ -138,7 +138,7 @@ df_dur_chage = pd.DataFrame(np.array(values_dur_change), columns=['duration', 'm
 
 fig = plt.figure()
 
-rcParams['figure.figsize'] = 6, 4
+rcParams['figure.figsize'] = 5, 3
 rcParams['axes.labelsize'] = 12
 rcParams['axes.titlesize'] = 20
 rcParams["font.size"] = 10
@@ -147,19 +147,19 @@ rcParams["font.size"] = 10
 # plt.ylabel('Memory(MB)', color='#0065bd')
 # plt.plot( df["duration"], "-x", color="#e37222", label='Duration', linewidth=3.0)
 # plt.ylabel('Duration(ms)', color='#e37222')
-plt.plot( df_linear["duration"], "--", color="darkorange", label='Linear', linewidth=2.0)
-plt.plot( df_bin["duration"], "-.", color="royalblue", label='Binary', linewidth=2.0)
-plt.plot( df_gd["duration"], "-1", color="darkgreen", label='Gradient decent', linewidth=2.0)
-plt.ylabel('Duration (ms)', color='black')
-plt.plot(10, df_linear["duration"][10], 'rX', markersize=6)
-plt.plot(24, df_bin["duration"][24], 'rX', markersize=6)
-plt.plot(8, df_gd["duration"][8], 'rX', markersize=6)
-plt.legend()
-plt.xlabel('Iterations')
-plt.xticks(np.arange(0, len(values_bin)+1, 1.0), rotation=90, ha='center')
-plt.grid(axis="both", color="0.9", linestyle='-', linewidth=0.6)
-plt.show()
-fig.savefig("../images/5_combined_duration_cost_obj.png", format='pdf', dpi=300, bbox_inches='tight')
+# plt.plot( df_linear["duration"], "--", color="darkorange", label='Linear', linewidth=2.0)
+# plt.plot( df_bin["duration"], "-.", color="royalblue", label='Binary', linewidth=2.0)
+# plt.plot( df_gd["duration"], "-1", color="darkgreen", label='Gradient decent', linewidth=2.0)
+# plt.ylabel('Duration (ms)', color='black')
+# plt.plot(10, df_linear["duration"][10], 'rX', markersize=6)
+# plt.plot(24, df_bin["duration"][24], 'rX', markersize=6)
+# plt.plot(8, df_gd["duration"][8], 'rX', markersize=6)
+# plt.legend()
+# plt.xlabel('Iterations')
+# plt.xticks(np.arange(0, len(values_bin)+1, 1.0), rotation=90, ha='center')
+# #plt.grid(axis="both", color="0.9", linestyle='-', linewidth=0.6)
+# plt.show()
+# fig.savefig("../images/5_combined_duration_cost_obj.pdf", format='pdf', dpi=300, bbox_inches='tight')
 
 
 # plt.plot( df_linear["memory"], "--", color="darkorange", label='Linear', linewidth=2.0)
@@ -168,13 +168,13 @@ fig.savefig("../images/5_combined_duration_cost_obj.png", format='pdf', dpi=300,
 # plt.plot(10, df_linear["memory"][10], 'rX', markersize=6)
 # plt.plot(24, df_bin["memory"][24], 'rX', markersize=6)
 # plt.plot(8, df_gd["memory"][8], 'rX', markersize=6)
-# plt.ylabel('Memory (in MB)', color='#0065bd')
+# plt.ylabel('Memory (in MB)', color='black')
 # plt.legend()
 # plt.xlabel('Iterations')
 # plt.xticks(np.arange(0, len(values_bin)+1, 1.0), rotation=90, ha='center')
-# plt.grid(axis="both", color="0.9", linestyle='-', linewidth=0.6)
+# #plt.grid(axis="both", color="0.9", linestyle='-', linewidth=0.6)
 # plt.show()
-# fig.savefig("../images/5_combined_memory_cost_obj.png", format='pdf', dpi=300, bbox_inches='tight')
+# fig.savefig("../images/5_combined_memory_cost_obj.pdf", format='pdf', dpi=300, bbox_inches='tight')
 
 #
 # plt.plot( df_linear["cost"], "--", color="darkorange", label='Linear', linewidth=2.0)
@@ -183,13 +183,13 @@ fig.savefig("../images/5_combined_duration_cost_obj.png", format='pdf', dpi=300,
 # plt.plot(10, df_linear["cost"][10], 'rX', markersize=6)
 # plt.plot(24, df_bin["cost"][24], 'rX', markersize=6)
 # plt.plot(8, df_gd["cost"][8], 'rX', markersize=6)
-# plt.ylabel('Cost (in $)', color='#0065bd')
+# plt.ylabel('Cost (in $)', color='black')
 # plt.legend()
 # plt.xlabel('Iterations')
 # plt.xticks(np.arange(0, len(values_bin)+1, 1.0), rotation=90, ha='center')
-# plt.grid(axis="both", color="0.9", linestyle='-', linewidth=0.6)
+# #plt.grid(axis="both", color="0.9", linestyle='-', linewidth=0.6)
 # plt.show()
-# fig.savefig("../images/5_combined_cost_cost_obj.png", format='pdf', dpi=300, bbox_inches='tight')
+# fig.savefig("../images/5_combined_cost_cost_obj.pdf", format='pdf', dpi=300, bbox_inches='tight')
 
 #
 #
@@ -207,9 +207,9 @@ fig.savefig("../images/5_combined_duration_cost_obj.png", format='pdf', dpi=300,
 # plt.legend()
 # plt.xlabel('Iterations')
 # plt.xticks(np.arange(0, len(values_bin_dur)+1, 1.0), rotation=90, ha='center')
-# plt.grid(axis="both", color="0.9", linestyle='-', linewidth=0.6)
+# #plt.grid(axis="both", color="0.9", linestyle='-', linewidth=0.6)
 # plt.show()
-# fig.savefig("../images/5_combined_duration_dur_obj.png", format='pdf', dpi=300, bbox_inches='tight')
+# fig.savefig("../images/5_combined_duration_dur_obj.pdf", format='pdf', dpi=300, bbox_inches='tight')
 
 #
 # plt.plot( df_linear_dur["memory"], "--", color="darkorange", label='Linear', linewidth=2.0)
@@ -218,13 +218,13 @@ fig.savefig("../images/5_combined_duration_cost_obj.png", format='pdf', dpi=300,
 # plt.plot(15, df_linear_dur["memory"][15], 'rX', markersize=6)
 # plt.plot(24, df_bin_dur["memory"][24], 'rX', markersize=6)
 # plt.plot(10, df_gd_dur["memory"][10], 'rX', markersize=6)
-# plt.ylabel('Memory (in MB)', color='#0065bd')
+# plt.ylabel('Memory (in MB)', color='black')
 # plt.legend()
 # plt.xlabel('Iterations')
 # plt.xticks(np.arange(0, len(values_bin_dur)+1, 1.0), rotation=90, ha='center')
-# plt.grid(axis="both", color="0.9", linestyle='-', linewidth=0.6)
+# #plt.grid(axis="both", color="0.9", linestyle='-', linewidth=0.6)
 # plt.show()
-# fig.savefig("../images/5_combined_memory_dur_obj.png", format='pdf', dpi=300, bbox_inches='tight')
+# fig.savefig("../images/5_combined_memory_dur_obj.pdf", format='pdf', dpi=300, bbox_inches='tight')
 
 #
 # plt.plot( df_linear_dur["cost"], "--", color="darkorange", label='Linear', linewidth=2.0)
@@ -233,13 +233,13 @@ fig.savefig("../images/5_combined_duration_cost_obj.png", format='pdf', dpi=300,
 # plt.plot(15, df_linear_dur["cost"][15], 'rX', markersize=6)
 # plt.plot(24, df_bin_dur["cost"][24], 'rX', markersize=6)
 # plt.plot(10, df_gd_dur["cost"][10], 'rX', markersize=6)
-# plt.ylabel('Cost (in $)', color='#0065bd')
+# plt.ylabel('Cost (in $)', color='black')
 # plt.legend()
 # plt.xlabel('Iterations')
 # plt.xticks(np.arange(0, len(values_bin_dur)+1, 1.0), rotation=90, ha='center')
-# plt.grid(axis="both", color="0.9", linestyle='-', linewidth=0.6)
+# #plt.grid(axis="both", color="0.9", linestyle='-', linewidth=0.6)
 # plt.show()
-# fig.savefig("../images/5_combined_cost_dur_obj.png", format='pdf', dpi=300, bbox_inches='tight')
+# fig.savefig("../images/5_combined_cost_dur_obj.pdf", format='pdf', dpi=300, bbox_inches='tight')
 
 #
 #
@@ -255,32 +255,32 @@ fig.savefig("../images/5_combined_duration_cost_obj.png", format='pdf', dpi=300,
 # plt.xticks(np.arange(0, len(values_optimal)+1, 1.0), rotation=90, ha='center')
 # plt.grid(axis="both", color="0.9", linestyle='-', linewidth=0.6)
 # plt.show()
-# fig.savefig("../images/5_combined_duration_bal_obj.png", format='pdf', dpi=300, bbox_inches='tight')
+# fig.savefig("../images/5_combined_duration_bal_obj.pdf", format='pdf', dpi=300, bbox_inches='tight')
 
 
 # plt.plot( df_optimal["memory"], "--", color="darkorange", label='OptimalValues', linewidth=2.0)
 # plt.plot( df_dur_chage["memory"], "-.", color="royalblue", label='Duration Change', linewidth=2.0)
 # plt.plot(11, df_optimal["memory"][11], 'rX', markersize=6)
 # plt.plot(5, df_dur_chage["memory"][5], 'rX', markersize=6)
-# plt.ylabel('Memory (in MB)', color='#0065bd')
+# plt.ylabel('Memory (in MB)', color='black')
 # plt.legend()
 # plt.xlabel('Iterations')
 # plt.xticks(np.arange(0, len(values_optimal)+1, 1.0), rotation=90, ha='center')
 # plt.grid(axis="both", color="0.9", linestyle='-', linewidth=0.6)
 # plt.show()
-# fig.savefig("../images/5_combined_memory_bal_obj.png", format='pdf', dpi=300, bbox_inches='tight')
-#
+# fig.savefig("../images/5_combined_memory_bal_obj.pdf", format='pdf', dpi=300, bbox_inches='tight')
 
-# plt.plot( df_optimal["cost"], "--", color="darkorange", label='OptimalValues', linewidth=2.0)
-# plt.plot( df_dur_chage["cost"], "-.", color="royalblue", label='Duration Change', linewidth=2.0)
-# plt.plot(11, df_optimal["cost"][11], 'rX', markersize=6)
-# plt.plot(5, df_dur_chage["cost"][5], 'rX', markersize=6)
-# plt.ylabel('Cost (in $)', color='#0065bd')
-# plt.legend()
-# plt.xlabel('Iterations')
-# plt.xticks(np.arange(0, len(values_optimal)+1, 1.0), rotation=90, ha='center')
-# plt.grid(axis="both", color="0.9", linestyle='-', linewidth=0.6)
-# plt.show()
-# fig.savefig("../images/5_combined_cost_bal_obj.png", format='pdf', dpi=300, bbox_inches='tight')
-#
-#
+
+plt.plot( df_optimal["cost"], "--", color="darkorange", label='OptimalValues', linewidth=2.0)
+plt.plot( df_dur_chage["cost"], "-.", color="royalblue", label='Duration Change', linewidth=2.0)
+plt.plot(11, df_optimal["cost"][11], 'rX', markersize=6)
+plt.plot(5, df_dur_chage["cost"][5], 'rX', markersize=6)
+plt.ylabel('Cost (in $)', color='black')
+plt.legend()
+plt.xlabel('Iterations')
+plt.xticks(np.arange(0, len(values_optimal)+1, 1.0), rotation=90, ha='center')
+plt.grid(axis="both", color="0.9", linestyle='-', linewidth=0.6)
+plt.show()
+fig.savefig("../images/5_combined_cost_bal_obj.pdf", format='pdf', dpi=300, bbox_inches='tight')
+
+
