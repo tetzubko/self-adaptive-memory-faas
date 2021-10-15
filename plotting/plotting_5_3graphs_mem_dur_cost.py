@@ -136,9 +136,6 @@ df_optimal = pd.DataFrame(np.array(values_optimal), columns=['duration', 'memory
 df_dur_chage = pd.DataFrame(np.array(values_dur_change), columns=['duration', 'memory', 'cost'])
 
 
-# df.sort_values(by=['memory'], inplace=True)
-
-
 fig = plt.figure()
 
 rcParams['figure.figsize'] = 6, 4
@@ -287,5 +284,3 @@ fig.savefig("../images/5_combined_duration_cost_obj.png", format='pdf', dpi=300,
 # fig.savefig("../images/5_combined_cost_bal_obj.png", format='pdf', dpi=300, bbox_inches='tight')
 #
 #
-
-

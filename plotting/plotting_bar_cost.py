@@ -16,15 +16,15 @@ plt.figure(figsize=(8, 5))
 ax.grid(axis="both", color="0.9", linestyle='-', linewidth=1)
 ax.set_axisbelow(True)
 
-# linear = [15, 16, 17, 9]
-# binary = [64, 31, 53, 53]
-# gd = [38, 19, 22, 13]
-# ax.set_ylabel('Number of iterations', fontsize = 12.0)
+linear = [15, 16, 17, 9]
+binary = [64, 31, 53, 53]
+gd = [38, 19, 22, 13]
+ax.set_ylabel('Number of iterations', fontsize = 12.0)
 
-linear = [196906, 9464, 12182, 43589]
-binary = [447145, 18938, 21589, 168829]
-gd = [156390, 5570, 5473, 41048]
-ax.set_ylabel('Execution Duration (ms)', fontsize = 12.0)
+# linear = [196906, 9464, 12182, 43589]
+# binary = [447145, 18938, 21589, 168829]
+# gd = [156390, 5570, 5473, 41048]
+# ax.set_ylabel('Execution Duration (ms)', fontsize = 12.0)
 
 p1 = ax.bar(x - width, linear, width=width, capsize=2, ecolor='blue', edgecolor='black', label='Linear', color = 'w', hatch = 'oo' )
 p2 = ax.bar(x, binary, width=width, capsize=2, ecolor='blue', edgecolor='black', label='Binary', color = 'w', hatch = '////' )
@@ -55,7 +55,7 @@ autolabel(p3)
 fig.tight_layout()
 
 plt.show()
-fig.savefig("../../images/5_duration_per_algorithm_cost.pdf", format='pdf', dpi=300, bbox_inches='tight')
+fig.savefig("../../images/4_iterations_per_algorithm_cost.pdf", format='pdf', dpi=300, bbox_inches='tight')
 
 
 
